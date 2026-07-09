@@ -87,6 +87,14 @@ export async function loginUser(formData: FormData) {
     return { error: 'Esta cuenta ha sido desactivada' }
   }
 
+  if (!user.emailVerified) {
+    return { 
+      error: 'Debes verificar tu correo electrónico antes de iniciar sesión. Revisa tu bandeja de entrada o solicita un nuevo enlace.',
+      code: 'EMAIL_UNVERIFIED',
+      email: user.email
+    }
+  }
+
   const isValid = await comparePassword(password, user.passwordHash)
 
   if (!isValid) {

@@ -2,24 +2,28 @@
 
 import React, { useState, useTransition } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, Lock, ArrowRight } from 'lucide-react'
+import { Mail, Lock, ArrowRight, AlertTriangle } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Input } from '@/components/ui/Input'
 import { Button } from '@/components/ui/Button'
 import { loginUser } from '@/app/actions/auth'
+import { ReenviarBoton } from '@/app/verificar-correo/ReenviarBoton'
 
 export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const handleAction = async (formData: FormData) => {
     setError(null)
+    setUnverifiedEmail(null)
     startTransition(async () => {
       const res = await loginUser(formData)
       if (res?.error) {
-        // Traducir algunos errores comunes
-        if (res.error.toLowerCase().includes('invalid credentials')) {
+        if (res.code === 'EMAIL_UNVERIFIED' && res.email) {
+          setUnverifiedEmail(res.email)
+        } else if (res.error.toLowerCase().includes('invalid credentials')) {
           setError('Credenciales incorrectas. Inténtalo de nuevo.')
         } else {
           setError(res.error)
@@ -81,6 +85,28 @@ export default function LoginPage() {
               className="text-sm text-red-400 bg-red-400/10 p-3 rounded-lg border border-red-400/20"
             >
               {error}
+            </motion.div>
+          )}
+
+          {/* Aviso especial para correo no verificado */}
+          {unverifiedEmail && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-[#1a1d18] border border-[#C9A961]/30 rounded-xl p-5 space-y-4"
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-[#C9A961] shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-[#C9A961]">Correo no verificado</p>
+                  <p className="text-xs text-foreground/70 mt-1 leading-relaxed">
+                    Tu cuenta aún no ha sido confirmada. Revisa la bandeja de entrada de <span className="text-foreground font-medium">{unverifiedEmail}</span> y haz clic en el enlace de verificación que te enviamos al registrarte.
+                  </p>
+                </div>
+              </div>
+              <div className="pl-8">
+                <ReenviarBoton email={unverifiedEmail} />
+              </div>
             </motion.div>
           )}
 
