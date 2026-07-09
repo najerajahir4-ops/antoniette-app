@@ -3,6 +3,7 @@ import { verifyToken } from '@/lib/auth/jwt'
 import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { Package, User as UserIcon } from 'lucide-react'
+import { LogoutButton } from '@/components/ui/LogoutButton'
 
 export default async function ProfilePage() {
   const cookieStore = await cookies()
@@ -56,12 +57,10 @@ export default async function ProfilePage() {
       </div>
       
       <div className="mb-8">
-        <form action="/api/auth/logout" method="POST">
-          <button type="submit" className="flex items-center text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors font-medium">
-            <UserIcon className="w-4 h-4 mr-2" />
-            Cerrar Sesión
-          </button>
-        </form>
+        <LogoutButton className="flex items-center text-red-500 hover:bg-red-500/10 px-4 py-2 rounded-lg transition-colors font-medium">
+          <UserIcon className="w-4 h-4 mr-2" />
+          Cerrar Sesión
+        </LogoutButton>
       </div>
 
       <div className="bg-surface border border-surface-border rounded-3xl overflow-hidden shadow-xl">

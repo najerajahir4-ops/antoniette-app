@@ -17,6 +17,7 @@ import {
 import { getActiveReviews } from "@/app/actions/reviews";
 import { ReviewForm } from "@/components/store/ReviewForm";
 import { getCurrentUserAction } from "@/app/actions/auth";
+import { LogoutButton } from "@/components/ui/LogoutButton";
 import Link from "next/link";
 
 // --- Mock Data ---
@@ -180,11 +181,9 @@ export default function LandingPage() {
                   <Link href="/mis-reservas" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors hidden sm:block">
                     Mis Reservas
                   </Link>
-                  <form action="/api/auth/logout" method="POST" className="inline m-0">
-                    <button type="submit" className="text-xs uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors bg-transparent border-0 p-0 cursor-pointer">
-                      Salir
-                    </button>
-                  </form>
+                  <LogoutButton className="text-xs uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors bg-transparent border-0 p-0 cursor-pointer">
+                    Salir
+                  </LogoutButton>
                 </div>
               ) : (
                 <Link href="/login" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">

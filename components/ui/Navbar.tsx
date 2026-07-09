@@ -7,6 +7,8 @@ import { useCart } from '@/lib/store/cart'
 import { CartDrawer } from '../cart/CartDrawer'
 import { motion, useScroll, useMotionValueEvent, AnimatePresence } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { useTransition } from 'react'
+import { logoutUser } from '@/app/actions/auth'
 
 export function Navbar({ user }: { user: any }) {
   const items = useCart(state => state.items)
@@ -38,10 +40,12 @@ export function Navbar({ user }: { user: any }) {
     setIsMounted(true)
   }, [])
 
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/login')
-    router.refresh()
+  const [isPendingLogout, startLogout] = useTransition()
+
+  const handleLogout = () => {
+    startLogout(async () => {
+      await logoutUser()
+    })
   }
 
   return (

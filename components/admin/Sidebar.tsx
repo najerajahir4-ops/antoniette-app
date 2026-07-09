@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutDashboard, Package, ShoppingCart, Users, Settings, Folder, LogOut, Grid, Star, ShieldAlert } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { LogoutButton } from '@/components/ui/LogoutButton'
 
 const menuItems = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -55,17 +56,12 @@ export function Sidebar() {
           <div className="text-sm font-medium">Administrator</div>
         </div>
         
-        <form action="/api/auth/logout" method="POST" className="px-4">
-          <motion.button 
-            type="submit" 
-            whileHover={{ x: 5, backgroundColor: 'rgba(239, 68, 68, 0.1)' }}
-            whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-red-400 transition-colors w-full text-left py-2 px-2 rounded-lg"
-          >
+        <div className="px-4">
+          <LogoutButton className="flex items-center gap-2 text-sm font-medium text-red-500 hover:text-red-400 transition-colors w-full text-left py-2 px-2 rounded-lg hover:bg-red-500/10">
             <LogOut className="w-4 h-4" />
             Cerrar Sesión
-          </motion.button>
-        </form>
+          </LogoutButton>
+        </div>
       </div>
     </aside>
   )

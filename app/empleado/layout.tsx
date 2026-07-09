@@ -4,6 +4,7 @@ import { getSessionCookie } from '@/lib/auth/session'
 import { verifyToken } from '@/lib/auth/jwt'
 import { redirect } from 'next/navigation'
 import { ShieldCheck, Calendar, ClipboardList, LogOut, LayoutDashboard } from 'lucide-react'
+import { LogoutButton } from '@/components/ui/LogoutButton'
 
 async function checkAuth() {
   const sessionToken = await getSessionCookie()
@@ -55,15 +56,12 @@ export default async function EmployeeLayout({ children }: { children: React.Rea
 
         {/* Footer actions */}
         <div className="space-y-4">
-          <form action="/api/auth/logout" method="POST">
-            <button
-              type="submit"
+          <LogoutButton
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-400/80 hover:text-red-400 hover:bg-red-500/10 text-sm transition-all duration-300 text-left"
             >
               <LogOut className="w-4 h-4" />
               Cerrar Sesión
-            </button>
-          </form>
+            </LogoutButton>
         </div>
       </aside>
 
