@@ -3,13 +3,15 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { createReview } from '@/app/actions/reviews'
-import { Star, Send, CheckCircle2 } from 'lucide-react'
+import { Star, Send, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { ReenviarBoton } from '@/app/verificar-correo/ReenviarBoton'
 
 interface UserSession {
   id: string
   email: string
   role: string
+  emailVerified?: boolean
 }
 
 export function ReviewForm({ user }: { user: UserSession | null }) {
@@ -126,6 +128,19 @@ export function ReviewForm({ user }: { user: UserSession | null }) {
               >
                 Inicia Sesión para dejar Reseña
               </button>
+            ) : !user.emailVerified ? (
+              <div className="w-full bg-black/40 border border-[#C9A961]/20 p-6 rounded-md space-y-4 text-center mt-4">
+                <div className="flex items-center justify-center gap-2 text-[#C9A961]">
+                  <AlertTriangle className="w-5 h-5" />
+                  <h3 className="font-serif text-sm">Verifica tu correo electrónico</h3>
+                </div>
+                <p className="text-foreground/80 text-xs max-w-sm mx-auto leading-relaxed">
+                  Para poder dejar una reseña sobre tu experiencia en Antoniette, debes confirmar tu cuenta. Hemos enviado un correo de verificación a tu bandeja de entrada.
+                </p>
+                <div className="max-w-xs mx-auto pt-2">
+                  <ReenviarBoton email={user.email} />
+                </div>
+              </div>
             ) : (
               <button
                 type="submit"

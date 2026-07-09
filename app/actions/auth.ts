@@ -4,13 +4,14 @@ import { prisma } from '@/lib/prisma'
 import { hashPassword, comparePassword } from '@/lib/auth/password'
 import { createSessionCookie, deleteSessionCookie, getSessionCookie } from '@/lib/auth/session'
 import { redirect } from 'next/navigation'
+import { sendVerificationEmail } from '@/lib/email/send'
 
 export async function registerUser(formData: FormData) {
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
   if (!email || !password) {
-    return { error: 'Email and password are required' }
+    return { error: 'El correo electrónico y la contraseña son obligatorios' }
   }
 
   const existingUser = await prisma.user.findUnique({
@@ -18,16 +19,27 @@ export async function registerUser(formData: FormData) {
   })
 
   if (existingUser) {
-    return { error: 'User already exists' }
+    return { error: 'El usuario ya existe con este correo electrónico' }
   }
 
   const passwordHash = await hashPassword(password)
+  const verificationToken = crypto.randomUUID()
+  const verificationTokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
 
   const user = await prisma.user.create({
     data: {
       email,
       passwordHash,
+      emailVerified: false,
+      verificationToken,
+      verificationTokenExpiry,
+      lastVerificationSentAt: new Date(),
     }
+  })
+
+  // Enviar el correo de verificación de forma asíncrona sin bloquear la respuesta del registro
+  sendVerificationEmail(email, verificationToken).catch((err) => {
+    console.error('Error asíncrono enviando email de verificación:', err)
   })
 
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -60,21 +72,25 @@ export async function loginUser(formData: FormData) {
   const password = formData.get('password') as string
 
   if (!email || !password) {
-    return { error: 'Email and password are required' }
+    return { error: 'El correo electrónico y la contraseña son obligatorios' }
   }
 
   const user = await prisma.user.findUnique({
     where: { email }
   })
 
-  if (!user || !user.isActive) {
-    return { error: 'Invalid credentials or inactive account' }
+  if (!user) {
+    return { error: 'Credenciales incorrectas' }
+  }
+
+  if (!user.isActive) {
+    return { error: 'Esta cuenta ha sido desactivada' }
   }
 
   const isValid = await comparePassword(password, user.passwordHash)
 
   if (!isValid) {
-    return { error: 'Invalid credentials' }
+    return { error: 'Credenciales incorrectas' }
   }
 
   const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
@@ -113,5 +129,11 @@ export async function getCurrentUserAction() {
   if (!sessionToken) return null
   const payload = await verifyToken(sessionToken)
   if (!payload) return null
-  return { id: payload.sub as string, email: payload.email as string, role: payload.role as string }
+  
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub as string },
+    select: { id: true, email: true, role: true, emailVerified: true }
+  })
+  
+  return user
 }

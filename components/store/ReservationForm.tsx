@@ -5,11 +5,13 @@ import { motion } from 'framer-motion'
 import { getAvailableTables, createReservation } from '@/app/actions/reservations'
 import { Calendar, Clock, Users, CheckCircle2, AlertTriangle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { ReenviarBoton } from '@/app/verificar-correo/ReenviarBoton'
 
 interface UserSession {
   id: string
   email: string
   role: string
+  emailVerified?: boolean
 }
 
 interface Table {
@@ -256,11 +258,25 @@ export function ReservationForm({ user }: { user: UserSession | null }) {
             <div className="flex justify-end pt-4">
               {!user ? (
                 <button
-                  type="submit"
-                  className="w-full md:w-auto px-8 py-4 bg-accent text-[#1A1D18] font-semibold tracking-widest uppercase hover:scale-105 transition-transform duration-300"
+                  type="button"
+                  onClick={() => router.push('/login?redirect=/reservar')}
+                  className="w-full md:w-auto px-8 py-4 bg-accent text-[#1A1D18] font-semibold tracking-widest uppercase hover:scale-105 transition-transform duration-300 rounded-sm"
                 >
                   Inicia Sesión para Reservar
                 </button>
+              ) : !user.emailVerified ? (
+                <div className="w-full bg-[#212520] border border-[#C9A961]/20 p-6 rounded-md space-y-4 text-center">
+                  <div className="flex items-center justify-center gap-3 text-[#C9A961]">
+                    <AlertTriangle className="w-6 h-6" />
+                    <h3 className="font-serif text-lg">Verifica tu correo electrónico</h3>
+                  </div>
+                  <p className="text-foreground/80 text-sm max-w-md mx-auto">
+                    Para poder realizar reservas interactivas de nuestras mesas exclusivas, debes confirmar tu cuenta. Hemos enviado un correo de verificación a tu bandeja de entrada.
+                  </p>
+                  <div className="max-w-xs mx-auto pt-2">
+                    <ReenviarBoton email={user.email} />
+                  </div>
+                </div>
               ) : (
                 <button
                   type="submit"

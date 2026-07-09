@@ -4,12 +4,20 @@ import { verifyToken } from '@/lib/auth/jwt'
 import { ReservationForm } from '@/components/store/ReservationForm'
 import Link from 'next/link'
 
+import { prisma } from '@/lib/prisma'
+
 async function getCurrentUser() {
   const sessionToken = await getSessionCookie()
   if (!sessionToken) return null
   const payload = await verifyToken(sessionToken)
   if (!payload) return null
-  return { id: payload.sub as string, email: payload.email as string, role: payload.role as string }
+  
+  const dbUser = await prisma.user.findUnique({
+    where: { id: payload.sub as string },
+    select: { id: true, email: true, role: true, emailVerified: true }
+  })
+  
+  return dbUser
 }
 
 export default async function ReservarPage() {

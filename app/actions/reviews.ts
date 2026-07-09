@@ -20,6 +20,15 @@ export async function createReview(rating: number, comment: string) {
       return { error: 'Debes iniciar sesión para dejar una reseña', code: 'UNAUTHORIZED' }
     }
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { emailVerified: true }
+    })
+
+    if (!dbUser || !dbUser.emailVerified) {
+      return { error: 'Verifica tu correo electrónico para poder dejar una reseña', code: 'EMAIL_UNVERIFIED' }
+    }
+
     if (!rating || rating < 1 || rating > 5) {
       return { error: 'La calificación debe estar entre 1 y 5 estrellas' }
     }

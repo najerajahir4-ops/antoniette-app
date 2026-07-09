@@ -71,6 +71,15 @@ export async function createReservation(formData: {
       return { error: 'Debes iniciar sesión para realizar una reserva', code: 'UNAUTHORIZED' }
     }
 
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.id },
+      select: { emailVerified: true }
+    })
+
+    if (!dbUser || !dbUser.emailVerified) {
+      return { error: 'Verifica tu correo electrónico para poder reservar', code: 'EMAIL_UNVERIFIED' }
+    }
+
     const { tableId, dateStr, timeStr, guests } = formData
 
     if (!tableId || !dateStr || !timeStr || !guests) {

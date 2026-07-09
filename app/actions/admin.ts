@@ -173,6 +173,43 @@ export async function toggleUserStatus(userId: string) {
   }
 }
 
+export async function deleteUser(userId: string) {
+  try {
+    const auth = await checkAdminAuth()
+    if (!auth) return { error: 'No autorizado' }
+
+    // Verificar si el usuario tiene historial relacionado
+    const hasOrders = await prisma.order.findFirst({ where: { userId } })
+    const hasReservations = await prisma.reservation.findFirst({ where: { userId } })
+    const hasReviews = await prisma.review.findFirst({ where: { userId } })
+
+    if (hasOrders || hasReservations || hasReviews) {
+      // Tiene historial: aplicar Soft Delete (isActive: false)
+      await prisma.user.update({
+        where: { id: userId },
+        data: { isActive: false }
+      })
+      revalidatePath('/admin/employees')
+      return { 
+        success: true, 
+        softDeleted: true, 
+        message: 'El usuario posee historial activo (órdenes, reservas o reseñas). Se aplicó desactivación de cuenta (Soft Delete).' 
+      }
+    }
+
+    // Sin historial: realizar eliminación física segura
+    await prisma.user.delete({ where: { id: userId } })
+    revalidatePath('/admin/employees')
+    return { 
+      success: true, 
+      softDeleted: false, 
+      message: 'Usuario sin historial eliminado permanentemente de la base de datos.' 
+    }
+  } catch (error) {
+    return { error: 'Error al procesar la eliminación del usuario' }
+  }
+}
+
 // --- REPORTS ---
 
 export async function getAdminReport() {
