@@ -120,6 +120,43 @@ export async function createReservation(formData: {
     const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0))
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999))
 
+    // Validar configuraciones globales
+    const settings = await prisma.storeSettings.findUnique({ where: { id: 'global' } })
+    if (settings) {
+      const today = new Date()
+      const todayStart = new Date(today.setHours(0, 0, 0, 0))
+      
+      const maxDate = new Date(todayStart)
+      maxDate.setDate(todayStart.getDate() + settings.reservationMaxAdvanceDays)
+      
+      if (startOfDay < todayStart) {
+        return { error: 'No puedes realizar reservas en el pasado.' }
+      }
+      
+      if (startOfDay > maxDate) {
+        return { error: `Solo puedes reservar con un máximo de ${settings.reservationMaxAdvanceDays} días de anticipación.` }
+      }
+
+      // Validar horario de apertura
+      const [reqH, reqM] = timeStr.split(':').map(Number)
+      const [openH, openM] = settings.openingTime.split(':').map(Number)
+      const [closeH, closeM] = settings.closingTime.split(':').map(Number)
+      
+      const reqTime = reqH * 60 + reqM
+      const openTime = openH * 60 + openM
+      const closeTime = closeH * 60 + closeM
+      
+      const isOvernight = closeTime < openTime
+      
+      const isClosed = isOvernight 
+        ? (reqTime < openTime && reqTime > closeTime)
+        : (reqTime < openTime || reqTime > closeTime)
+
+      if (isClosed) {
+        return { error: `El horario de atención es de ${settings.openingTime} a ${settings.closingTime}.` }
+      }
+    }
+
     const [reqHours, reqMinutes] = timeStr.split(':').map(Number)
     const reqTimeInMinutes = reqHours * 60 + reqMinutes
 

@@ -32,7 +32,11 @@ export async function POST(req: Request) {
     }
 
     // Calcular total y crear la orden en la BD primero
-    const totalAmount = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
+    const subtotal = items.reduce((acc: number, item: any) => acc + (item.price * item.quantity), 0)
+    const settings = await prisma.storeSettings.findUnique({ where: { id: 'global' } })
+    const taxPercentage = settings?.taxPercentage || 0
+    const taxAmount = subtotal * (taxPercentage / 100)
+    const totalAmount = subtotal + taxAmount
     
     const order = await prisma.order.create({
       data: {
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
     // Formatear items para Stripe
-    const line_items = items.map((item: any) => ({
+    const line_items: any[] = items.map((item: any) => ({
       price_data: {
         currency: 'usd',
         product_data: {
@@ -63,6 +67,19 @@ export async function POST(req: Request) {
       },
       quantity: item.quantity,
     }))
+
+    if (taxPercentage > 0) {
+      line_items.push({
+        price_data: {
+          currency: 'usd',
+          product_data: {
+            name: `Impuestos (${taxPercentage}%)`,
+          },
+          unit_amount: Math.round(taxAmount * 100),
+        },
+        quantity: 1,
+      })
+    }
 
     // Crear sesión de Checkout de Stripe
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_dummy_key') {

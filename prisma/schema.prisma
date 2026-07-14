@@ -113,3 +113,15 @@ model Review {
   hidden    Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model StoreSettings {
+  id                        String   @id @default("global")
+  storeName                 String   @default("Antoniette Rooftop & Cucina Italiana")
+  storeAddress              String   @default("Santo Domingo")
+  storePhone                String   @default("+1 234 567 890")
+  openingTime               String   @default("18:00")
+  closingTime               String   @default("02:00")
+  reservationMaxAdvanceDays Int      @default(30)
+  taxPercentage             Float    @default(0)
+  updatedAt                 DateTime @updatedAt
+}
