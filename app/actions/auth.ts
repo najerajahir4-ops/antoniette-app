@@ -140,8 +140,10 @@ export async function getCurrentUserAction() {
   
   const user = await prisma.user.findUnique({
     where: { id: payload.sub as string },
-    select: { id: true, email: true, role: true, emailVerified: true }
+    select: { id: true, email: true, role: true, emailVerified: true, isActive: true }
   })
+  
+  if (!user || !user.isActive) return null
   
   return user
 }

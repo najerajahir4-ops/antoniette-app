@@ -10,6 +10,15 @@ async function checkAdminAuth() {
   if (!sessionToken) return null
   const payload = await verifyToken(sessionToken)
   if (!payload || payload.role !== 'ADMIN') return null
+
+  // Verificar que el usuario sigue activo en la base de datos
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub as string },
+    select: { isActive: true }
+  })
+  
+  if (!user || !user.isActive) return null
+
   return payload
 }
 
@@ -166,6 +175,13 @@ export async function toggleUserStatus(userId: string) {
       data: { isActive: !user.isActive }
     })
 
+    // Si se está desactivando al usuario, forzar el cierre de todas sus sesiones activas
+    if (user.isActive) {
+      await prisma.session.deleteMany({
+        where: { userId }
+      })
+    }
+
     revalidatePath('/admin/employees')
     return { success: true }
   } catch (error) {
@@ -182,6 +198,11 @@ export async function deleteUser(userId: string) {
     await prisma.user.update({
       where: { id: userId },
       data: { isActive: false }
+    })
+
+    // Eliminar todas las sesiones para forzar cierre inmediato
+    await prisma.session.deleteMany({
+      where: { userId }
     })
     
     revalidatePath('/admin/employees')

@@ -1,24 +1,34 @@
-import fs from 'fs/promises'
-import path from 'path'
+// NOTA: Requiere configurar CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET en Vercel
+import { v2 as cloudinary } from 'cloudinary';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function uploadFile(file: File): Promise<string> {
-  const bytes = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
-
-  const uploadsDir = path.join(process.cwd(), 'public', 'uploads')
-  
   try {
-    await fs.access(uploadsDir)
-  } catch {
-    await fs.mkdir(uploadsDir, { recursive: true })
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { folder: 'ecommerce' },
+        (error, result) => {
+          if (error || !result) {
+            console.error('Error uploading to Cloudinary:', error);
+            reject(error || new Error('Upload failed'));
+            return;
+          }
+          resolve(result.secure_url);
+        }
+      );
+      
+      uploadStream.end(buffer);
+    });
+  } catch (error) {
+    console.error('Error in uploadFile:', error);
+    throw new Error('No se pudo subir la imagen');
   }
-
-  const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`
-  const extension = path.extname(file.name) || ''
-  const filename = `${file.name.replace(extension, '').replace(/[^a-zA-Z0-9]/g, '-')}-${uniqueSuffix}${extension}`
-  
-  const filepath = path.join(uploadsDir, filename)
-  await fs.writeFile(filepath, buffer)
-
-  return `/uploads/${filename}`
 }

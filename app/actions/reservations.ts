@@ -11,6 +11,14 @@ async function getAuthUser() {
   if (!sessionToken) return null
   const payload = await verifyToken(sessionToken)
   if (!payload) return null
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.sub as string },
+    select: { isActive: true }
+  })
+  
+  if (!user || !user.isActive) return null
+
   return { id: payload.sub as string, role: payload.role as string }
 }
 
@@ -23,24 +31,32 @@ export async function getAvailableTables(dateStr: string, timeStr: string) {
     const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0))
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999))
 
-    // Get all reservations for that day, time, and that are not cancelled
+    // Get all reservations for that day that are not cancelled
     const activeReservations = await prisma.reservation.findMany({
       where: {
         date: {
           gte: startOfDay,
           lte: endOfDay,
         },
-        time: timeStr,
         status: {
           not: 'CANCELADA',
         },
       },
       select: {
         tableId: true,
+        time: true,
       },
     })
 
-    const reservedTableIds = activeReservations.map((r) => r.tableId)
+    const [reqHours, reqMinutes] = timeStr.split(':').map(Number)
+    const reqTimeInMinutes = reqHours * 60 + reqMinutes
+
+    const reservedTableIds = activeReservations.filter((res) => {
+      const [resHours, resMinutes] = res.time.split(':').map(Number)
+      const resTimeInMinutes = resHours * 60 + resMinutes
+      // Conflict if absolute difference in minutes is less than 120 (2 hours)
+      return Math.abs(reqTimeInMinutes - resTimeInMinutes) < 120
+    }).map((r) => r.tableId)
 
     // Get all tables and mark availability
     const allTables = await prisma.table.findMany({
@@ -104,22 +120,31 @@ export async function createReservation(formData: {
     const startOfDay = new Date(targetDate.setHours(0, 0, 0, 0))
     const endOfDay = new Date(targetDate.setHours(23, 59, 59, 999))
 
-    const existingReservation = await prisma.reservation.findFirst({
+    const [reqHours, reqMinutes] = timeStr.split(':').map(Number)
+    const reqTimeInMinutes = reqHours * 60 + reqMinutes
+
+    const existingReservations = await prisma.reservation.findMany({
       where: {
         tableId,
         date: {
           gte: startOfDay,
           lte: endOfDay,
         },
-        time: timeStr,
         status: {
           not: 'CANCELADA',
         },
       },
+      select: { time: true }
     })
 
-    if (existingReservation) {
-      return { error: 'Esta mesa ya ha sido reservada en el horario seleccionado' }
+    const hasConflict = existingReservations.some((res) => {
+      const [resHours, resMinutes] = res.time.split(':').map(Number)
+      const resTimeInMinutes = resHours * 60 + resMinutes
+      return Math.abs(reqTimeInMinutes - resTimeInMinutes) < 120
+    })
+
+    if (hasConflict) {
+      return { error: 'Esta mesa ya está reservada en un horario cercano (se requiere un margen de 2 horas)' }
     }
 
     // Create reservation (directly CONFIRMADA as per requirements)

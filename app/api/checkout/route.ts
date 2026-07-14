@@ -65,27 +65,24 @@ export async function POST(req: Request) {
     }))
 
     // Crear sesión de Checkout de Stripe
-    let sessionUrl = ''
     if (!process.env.STRIPE_SECRET_KEY || process.env.STRIPE_SECRET_KEY === 'sk_test_dummy_key') {
-      console.warn('STRIPE_SECRET_KEY no configurada. Simulando redirección a Stripe...')
-      // Simular un pago exitoso redirigiendo directamente a la URL de éxito
-      sessionUrl = `${baseUrl}/success?session_id=simulated_session_123&order_id=${order.id}`
-    } else {
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items,
-        mode: 'payment',
-        success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
-        cancel_url: `${baseUrl}/cart?canceled=true`,
-        metadata: {
-          orderId: order.id,
-          userId: userId || 'guest',
-        },
-      })
-      sessionUrl = session.url as string
+      console.error('Error Crítico: STRIPE_SECRET_KEY no está configurada. No se pueden procesar pagos.')
+      return NextResponse.json({ error: 'Error al procesar el pago, intenta más tarde' }, { status: 500 })
     }
 
-    return NextResponse.json({ paymentUrl: sessionUrl })
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ['card'],
+      line_items,
+      mode: 'payment',
+      success_url: `${baseUrl}/success?session_id={CHECKOUT_SESSION_ID}&order_id=${order.id}`,
+      cancel_url: `${baseUrl}/cart?canceled=true`,
+      metadata: {
+        orderId: order.id,
+        userId: userId || 'guest',
+      },
+    })
+
+    return NextResponse.json({ paymentUrl: session.url as string })
 
   } catch (error: any) {
     console.error('Stripe checkout error:', error)
