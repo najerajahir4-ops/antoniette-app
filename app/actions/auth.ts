@@ -62,6 +62,8 @@ export async function registerUser(formData: FormData) {
 
   if (user.role === 'ADMIN' || user.role === 'MANAGER') {
     redirect('/admin')
+  } else if (user.role === 'EMPLEADO') {
+    redirect('/empleado')
   } else {
     redirect('/')
   }
@@ -121,6 +123,8 @@ export async function loginUser(formData: FormData) {
 
   if (user.role === 'ADMIN' || user.role === 'MANAGER') {
     redirect('/admin')
+  } else if (user.role === 'EMPLEADO') {
+    redirect('/empleado')
   } else {
     redirect('/')
   }

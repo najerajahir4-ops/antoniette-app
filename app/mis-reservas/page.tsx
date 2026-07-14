@@ -29,9 +29,11 @@ export default async function MisReservasPage() {
             <Link href="/" className="text-sm uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
               Inicio
             </Link>
-            <Link href="/reservar" className="text-sm uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
-              Reservar Mesa
-            </Link>
+            {(!user || (user.role !== 'ADMIN' && user.role !== 'EMPLEADO')) && (
+              <Link href="/reservar" className="text-sm uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
+                Reservar Mesa
+              </Link>
+            )}
             {user && user.role === 'ADMIN' && (
               <Link href="/admin" className="text-sm uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors">
                 Admin

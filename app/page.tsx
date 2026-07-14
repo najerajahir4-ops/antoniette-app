@@ -178,9 +178,11 @@ export default function LandingPage() {
                       Empleado
                     </Link>
                   )}
-                  <Link href="/mis-reservas" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors hidden sm:block">
-                    Mis Reservas
-                  </Link>
+                  {currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO' && (
+                    <Link href="/mis-reservas" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors hidden sm:block">
+                      Mis Reservas
+                    </Link>
+                  )}
                   <LogoutButton className="text-xs uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors bg-transparent border-0 p-0 cursor-pointer">
                     Salir
                   </LogoutButton>
@@ -191,12 +193,14 @@ export default function LandingPage() {
                 </Link>
               )}
 
-              <Link 
-                href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
-                className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-background transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
-              >
-                Reservar Mesa
-              </Link>
+              {(!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO')) && (
+                <Link 
+                  href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
+                  className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-background transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
+                >
+                  Reservar Mesa
+                </Link>
+              )}
             </div>
           </div>
         </motion.nav>

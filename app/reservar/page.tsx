@@ -37,9 +37,11 @@ export default async function ReservarPage() {
             </Link>
             {user ? (
               <>
-                <Link href="/mis-reservas" className="text-sm uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
-                  Mis Reservas
-                </Link>
+                {(!user || (user.role !== 'ADMIN' && user.role !== 'EMPLEADO')) && (
+                  <Link href="/mis-reservas" className="text-sm uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
+                    Mis Reservas
+                  </Link>
+                )}
                 {user.role === 'ADMIN' && (
                   <Link href="/admin" className="text-sm uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors">
                     Admin
