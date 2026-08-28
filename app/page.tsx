@@ -18,25 +18,125 @@ import { getActiveReviews } from "@/app/actions/reviews";
 
 // --- Mock Data ---
 
-const MENU_CATEGORIES = ["Entradas", "Pastas", "Carnes", "Postres", "Cócteles"];
+const MENU_CATEGORIES = ["Entradas", "Pastas", "Pizzas", "Carnes", "Cócteles"];
 const MENU_ITEMS = [
-  { id: 1, name: "Burrata al Pomodoro", category: "Entradas", description: "Burrata fresca, tomates cherry confitados, pesto de albahaca.", price: "$12.00", image: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&q=80&w=600" },
-  { id: 2, name: "Carpaccio de Res", category: "Entradas", description: "Láminas de lomo fino, alcaparras, parmesano, aceite de trufa.", price: "$15.00", image: "https://images.unsplash.com/photo-1544358586-8ab07d720b05?auto=format&fit=crop&q=80&w=600" },
-  { id: 3, name: "Ravioli di Tartufo", category: "Pastas", description: "Raviolis artesanales rellenos de ricotta y trufa, salsa de mantequilla y salvia.", price: "$22.00", image: "https://images.unsplash.com/photo-1587214041042-3ee3f47b59e5?auto=format&fit=crop&q=80&w=600" },
-  { id: 4, name: "Linguine ai Frutti di Mare", category: "Pastas", description: "Pasta con mariscos frescos, salsa de tomate y vino blanco.", price: "$25.00", image: "https://images.unsplash.com/photo-1563379926898-05f45c514605?auto=format&fit=crop&q=80&w=600" },
-  { id: 5, name: "Bistecca alla Fiorentina", category: "Carnes", description: "Corte grueso a la parrilla, sal marina, romero.", price: "$35.00", image: "https://images.unsplash.com/photo-1544025162-882ab2a353d6?auto=format&fit=crop&q=80&w=600" },
-  { id: 6, name: "Tiramisú Clásico", category: "Postres", description: "Savoiardi, mascarpone, café espresso, cacao.", price: "$9.00", image: "https://images.unsplash.com/photo-1571115177098-24c42d5e050c?auto=format&fit=crop&q=80&w=600" },
-  { id: 7, name: "Aperol Spritz", category: "Cócteles", description: "Aperol, Prosecco, soda, rodaja de naranja.", price: "$10.00", image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&q=80&w=600" },
-  { id: 8, name: "Negroni", category: "Cócteles", description: "Gin, Campari, Vermouth Rosso.", price: "$12.00", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=600" },
+  { 
+    id: 1, 
+    name: "Tabla de Antipasto Antoniette", 
+    category: "Entradas", 
+    description: "Burrata fresca artesanal, jamón serrano, prosciutto di Parma, quesos curados, aceitunas marinadas, dip dulce y tostas.", 
+    price: "$18.00", 
+    image: "/images/instagram/antipasto-tabla.jpg" 
+  },
+  { 
+    id: 2, 
+    name: "Carpaccio di Manzo", 
+    category: "Entradas", 
+    description: "Láminas finas de lomo de res, alcaparras baby, lascas de parmesano reggiano y aceite de trufa blanca.", 
+    price: "$15.00", 
+    image: "https://images.unsplash.com/photo-1544358586-8ab07d720b05?auto=format&fit=crop&q=80&w=600" 
+  },
+  { 
+    id: 3, 
+    name: "Tagliatelle con Bife Tagliata", 
+    category: "Pastas", 
+    description: "Pasta artesanal fresca al dente, corte jugoso de carne en término medio, albahaca y aceite de oliva virgen extra.", 
+    price: "$24.00", 
+    image: "/images/instagram/tagliata-pasta-cocktail.jpg" 
+  },
+  { 
+    id: 4, 
+    name: "Pasta Lover Experience", 
+    category: "Pastas", 
+    description: "Taller gastronómico de pasta fresca desde cero: estira, corta, cocina y disfruta con tu acompañante.", 
+    price: "$25.00", 
+    image: "/images/instagram/pasta-lover-club.jpg" 
+  },
+  { 
+    id: 5, 
+    name: "Ravioli di Tartufo", 
+    category: "Pastas", 
+    description: "Raviolis artesanales rellenos de ricotta y trufa, salsa suave de mantequilla dorada y salvia fresca.", 
+    price: "$22.00", 
+    image: "https://images.unsplash.com/photo-1587214041042-3ee3f47b59e5?auto=format&fit=crop&q=80&w=600" 
+  },
+  { 
+    id: 6, 
+    name: "Pizza Napolitana con Burrata", 
+    category: "Pizzas", 
+    description: "Masa madre de lenta fermentación horneada a la piedra, salsa pomodoro, burrata cremosa entera y prosciutto di Parma.", 
+    price: "$18.00", 
+    image: "/images/instagram/pizza-burrata-chef.jpg" 
+  },
+  { 
+    id: 7, 
+    name: "Bistecca alla Fiorentina", 
+    category: "Carnes", 
+    description: "Corte premium a la parrilla, sal marina en escamas, romero aromático y guarnición de la casa.", 
+    price: "$35.00", 
+    image: "https://images.unsplash.com/photo-1544025162-882ab2a353d6?auto=format&fit=crop&q=80&w=600" 
+  },
+  { 
+    id: 8, 
+    name: "Cóctel Frozen de Autor", 
+    category: "Cócteles", 
+    description: "Mixología refrescante de autor con hielo frappé, toques cítricos, hierbabuena fresca y licor artesanal.", 
+    price: "$11.00", 
+    image: "/images/instagram/cocktail-autor.jpg" 
+  },
+  { 
+    id: 9, 
+    name: "Aperol Spritz", 
+    category: "Cócteles", 
+    description: "Aperol, Prosecco italiano D.O.C., splash de soda y media luna de naranja fresca.", 
+    price: "$10.00", 
+    image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&q=80&w=600" 
+  },
 ];
 
-const GALLERY_IMAGES = [
-  "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1560008581-09826d1de69e?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1520206183501-b80df61043c2?auto=format&fit=crop&q=80&w=800",
-  "https://images.unsplash.com/photo-1554679665-f5537f187268?auto=format&fit=crop&q=80&w=800",
+const GALLERY_ITEMS = [
+  {
+    src: "/images/instagram/pizza-burrata-chef.jpg",
+    title: "Pizza Artesanal & Burrata",
+    desc: "Masa madre horneada con burrata fresca y prosciutto",
+    tag: "#PizzaNapoletana",
+    link: "https://www.instagram.com/antoniette.ec/"
+  },
+  {
+    src: "/images/instagram/tagliata-pasta-cocktail.jpg",
+    title: "Tagliata di Manzo & Pasta",
+    desc: "Cortes seleccionados con pasta fresca y coctelería",
+    tag: "#CucinaItaliana",
+    link: "https://www.instagram.com/antoniette.ec/"
+  },
+  {
+    src: "/images/instagram/antipasto-tabla.jpg",
+    title: "Tabla de Antipasto Antoniette",
+    desc: "Burrata, embutidos italianos, quesos curados y tostas",
+    tag: "#Aperitivo",
+    link: "https://www.instagram.com/antoniette.ec/"
+  },
+  {
+    src: "/images/instagram/pasta-lover-club.jpg",
+    title: "Pasta Lover Club",
+    desc: "Talleres para estirar, cortar y crear pasta desde cero",
+    tag: "#PastaFattaInCasa",
+    link: "https://www.instagram.com/antoniette.ec/"
+  },
+  {
+    src: "/images/instagram/pasta-experience-couple.jpg",
+    title: "Momentos en el Rooftop",
+    desc: "Celebraciones y cenas bajo las luces de nuestra terraza",
+    tag: "#RooftopVibes",
+    link: "https://www.instagram.com/antoniette.ec/"
+  },
+  {
+    src: "/images/instagram/cocktail-autor.jpg",
+    title: "Coctelería de Autor",
+    desc: "Mixología refrescante para acompañar cada velada",
+    tag: "#MixologiaAntoniette",
+    link: "https://www.instagram.com/antoniette.ec/"
+  }
 ];
 
 const TESTIMONIALS = [
@@ -377,27 +477,71 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. GALERÍA / AMBIENTE (Masonry/Grid) */}
-      <section className="py-0 overflow-hidden">
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-          {GALLERY_IMAGES.map((src, idx) => (
-            <motion.div 
+      {/* 5. GALERÍA / INSTAGRAM FEED (@antoniette.ec) */}
+      <section className="py-20 bg-background border-t border-surface-border">
+        <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div>
+            <div className="flex items-center gap-2 text-accent text-xs uppercase tracking-[0.25em] mb-2 font-medium">
+              <InstagramIcon className="w-4 h-4" />
+              <span>Experiencia & Comunidad</span>
+            </div>
+            <h2 className="font-playfair text-3xl md:text-5xl text-foreground">
+              @antoniette.ec en Instagram
+            </h2>
+            <p className="text-foreground/60 text-sm mt-2 max-w-md font-light">
+              Revive los momentos, platos de autor y celebraciones en las alturas de nuestro rooftop.
+            </p>
+          </div>
+          <a 
+            href="https://www.instagram.com/antoniette.ec/" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-surface hover:bg-surface-border border border-surface-border hover:border-accent text-xs uppercase tracking-widest text-foreground hover:text-accent transition-all rounded-full group w-fit shadow-md"
+          >
+            <span>Ver perfil en Instagram</span>
+            <InstagramIcon className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
+          </a>
+        </div>
+
+        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {GALLERY_ITEMS.map((item, idx) => (
+            <motion.a 
               key={idx}
-              className="relative aspect-square overflow-hidden group"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
+              href={item.link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="relative aspect-square overflow-hidden group rounded-xl border border-surface-border bg-surface block"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.8 }}
+              transition={{ delay: idx * 0.1, duration: 0.6 }}
             >
               <img 
-                src={src} 
-                alt={`Ambiente ${idx}`} 
-                className="w-full h-full object-cover group-hover:scale-105 group-hover:opacity-60 transition-all duration-700"
+                src={item.src} 
+                alt={item.title} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-90"
               />
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <InstagramIcon className="w-8 h-8 text-accent" />
+              
+              {/* Tag pill */}
+              <div className="absolute top-3 left-3 z-10">
+                <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] uppercase tracking-wider text-accent font-medium border border-white/10">
+                  {item.tag}
+                </span>
               </div>
-            </motion.div>
+
+              {/* Bottom overlay with caption and Instagram icon */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <div>
+                    <h4 className="font-playfair text-lg text-white font-semibold">{item.title}</h4>
+                    <p className="text-xs text-white/80 line-clamp-1 font-light mt-0.5">{item.desc}</p>
+                  </div>
+                  <div className="p-2.5 bg-accent/20 rounded-full text-accent backdrop-blur-sm shrink-0">
+                    <InstagramIcon className="w-5 h-5" />
+                  </div>
+                </div>
+              </div>
+            </motion.a>
           ))}
         </div>
       </section>
