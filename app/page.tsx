@@ -1,442 +1,403 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import { motion, useSpring } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 import { 
-  IceCream2, 
+  ChevronDown, 
   MapPin, 
-  Heart,
-  Leaf,
-  Cherry,
-  Milk,
-  Cookie,
-  ChevronLeft,
-  ChevronRight
+  Clock, 
+  Phone, 
+  Star, 
+  GlassWater, 
+  Music, 
+  Sunset, 
+  UtensilsCrossed 
 } from "lucide-react";
-import gsap from "gsap";
-import { useGSAP } from "@gsap/react";
-import { DripDivider } from "@/components/ui/DripDivider";
-
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(useGSAP);
-}
+import { getActiveReviews } from "@/app/actions/reviews";
+import { ReviewForm } from "@/components/store/ReviewForm";
+import { getCurrentUserAction } from "@/app/actions/auth";
+import { LogoutButton } from "@/components/ui/LogoutButton";
+import Link from "next/link";
 
 // --- Mock Data ---
-const MENU_CATEGORIES = ["Helados Artesanales", "Waffles", "Frappés", "Crepes"];
 
-// We use local images interchangeably to guarantee they load and show the melt effect properly
+const MENU_CATEGORIES = ["Entradas", "Pastas", "Carnes", "Postres", "Cócteles"];
 const MENU_ITEMS = [
-  { id: 1, name: "Helado de Frutos Rojos", category: "Helados Artesanales", description: "Cremoso helado artesanal con trozos de fresas y frambuesas naturales.", price: "$3.50", image: "/images/concepto-plato.png" },
-  { id: 2, name: "Cono Doble Choco-Vainilla", category: "Helados Artesanales", description: "Clásico cono artesanal con chocolate belga y vainilla de Madagascar.", price: "$4.00", image: "/images/hero-bg.png" },
-  { id: 3, name: "Copa Sundae Suprema", category: "Helados Artesanales", description: "Tres bolas de helado, crema chantilly, cereza y full sirope.", price: "$4.50", image: "/images/concepto-plato.png" },
-  { id: 4, name: "Helado de Pistacho", category: "Helados Artesanales", description: "Pistachos reales italianos molidos en base de crema dulce.", price: "$3.75", image: "/images/hero-bg.png" },
-  { id: 5, name: "Cono Simple de Mora", category: "Helados Artesanales", description: "El clásico favorito, ácido y dulce a la vez.", price: "$2.50", image: "/images/concepto-plato.png" },
-  { id: 6, name: "Copa Banana Split", category: "Helados Artesanales", description: "Banana entera, tres sabores de helado, chispas y crema.", price: "$5.50", image: "/images/hero-bg.png" },
-  { id: 7, name: "Helado Ron Pasas", category: "Helados Artesanales", description: "Pasas maceradas en ron añejo con base de vainilla cremosa.", price: "$3.50", image: "/images/concepto-plato.png" },
-  { id: 8, name: "Cono Waffle Gigante", category: "Helados Artesanales", description: "Cono de masa de waffle crujiente con dos bolas inmensas.", price: "$4.25", image: "/images/hero-bg.png" },
-  { id: 9, name: "Helado Menta Granizada", category: "Helados Artesanales", description: "Menta fresca con crujientes chispas de chocolate amargo.", price: "$3.50", image: "/images/concepto-plato.png" },
-  { id: 10, name: "Tarrina Familiar", category: "Helados Artesanales", description: "Un litro entero de tu sabor favorito para llevar a casa.", price: "$9.00", image: "/images/hero-bg.png" },
-  { id: 11, name: "Waffle Supremo", category: "Waffles", description: "Waffle recién horneado con helado, fresas frescas y sirope de chocolate.", price: "$5.50", image: "/images/concepto-plato.png" },
-  { id: 12, name: "Waffle Clásico", category: "Waffles", description: "Waffle crujiente con miel de maple y mantequilla.", price: "$3.50", image: "/images/hero-bg.png" },
-  { id: 13, name: "Frappé de Moka", category: "Frappés", description: "Café moka helado con crema batida y chispas de chocolate.", price: "$4.50", image: "/images/concepto-plato.png" },
-  { id: 14, name: "Frappé de Fresa", category: "Frappés", description: "Batido refrescante de fresas naturales con crema.", price: "$4.00", image: "/images/hero-bg.png" },
-  { id: 15, name: "Crepe Nutella Fresas", category: "Crepes", description: "Crepe francés con abundante Nutella y fresas frescas.", price: "$4.50", image: "/images/concepto-plato.png" },
-  { id: 16, name: "Crepe Salado Jamón Queso", category: "Crepes", description: "Crepe salado con jamón ahumado y queso derretido.", price: "$5.00", image: "/images/hero-bg.png" },
+  { id: 1, name: "Burrata al Pomodoro", category: "Entradas", description: "Burrata fresca, tomates cherry confitados, pesto de albahaca.", price: "$12.00", image: "https://images.unsplash.com/photo-1608897013039-887f214b985c?auto=format&fit=crop&q=80&w=600" },
+  { id: 2, name: "Carpaccio de Res", category: "Entradas", description: "Láminas de lomo fino, alcaparras, parmesano, aceite de trufa.", price: "$15.00", image: "https://images.unsplash.com/photo-1544358586-8ab07d720b05?auto=format&fit=crop&q=80&w=600" },
+  { id: 3, name: "Ravioli di Tartufo", category: "Pastas", description: "Raviolis artesanales rellenos de ricotta y trufa, salsa de mantequilla y salvia.", price: "$22.00", image: "https://images.unsplash.com/photo-1587214041042-3ee3f47b59e5?auto=format&fit=crop&q=80&w=600" },
+  { id: 4, name: "Linguine ai Frutti di Mare", category: "Pastas", description: "Pasta con mariscos frescos, salsa de tomate y vino blanco.", price: "$25.00", image: "https://images.unsplash.com/photo-1563379926898-05f45c514605?auto=format&fit=crop&q=80&w=600" },
+  { id: 5, name: "Bistecca alla Fiorentina", category: "Carnes", description: "Corte grueso a la parrilla, sal marina, romero.", price: "$35.00", image: "https://images.unsplash.com/photo-1544025162-882ab2a353d6?auto=format&fit=crop&q=80&w=600" },
+  { id: 6, name: "Tiramisú Clásico", category: "Postres", description: "Savoiardi, mascarpone, café espresso, cacao.", price: "$9.00", image: "https://images.unsplash.com/photo-1571115177098-24c42d5e050c?auto=format&fit=crop&q=80&w=600" },
+  { id: 7, name: "Aperol Spritz", category: "Cócteles", description: "Aperol, Prosecco, soda, rodaja de naranja.", price: "$10.00", image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&q=80&w=600" },
+  { id: 8, name: "Negroni", category: "Cócteles", description: "Gin, Campari, Vermouth Rosso.", price: "$12.00", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&q=80&w=600" },
+];
+
+const GALLERY_IMAGES = [
+  "https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1560008581-09826d1de69e?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1544148103-0773bf10d330?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1520206183501-b80df61043c2?auto=format&fit=crop&q=80&w=800",
+  "https://images.unsplash.com/photo-1554679665-f5537f187268?auto=format&fit=crop&q=80&w=800",
+];
+
+const TESTIMONIALS = [
+  { id: 1, name: "Carlos M.", text: "La mejor vista de la ciudad y una comida italiana excepcional. El ambiente nocturno es inmejorable.", rating: 5 },
+  { id: 2, name: "Andrea P.", text: "Los raviolis di tartufo son increíbles. Perfecto para una cena romántica o con amigos.", rating: 5 },
+  { id: 3, name: "Juan D.", text: "Excelente atención y los cócteles de autor son una maravilla. 100% recomendado.", rating: 5 },
 ];
 
 const FEATURES = [
-  { icon: IceCream2, title: "100% Artesanal", desc: "Elaborados diariamente con recetas propias." },
-  { icon: Leaf, title: "Ingredientes Frescos", desc: "Frutas naturales y lácteos de primera calidad." },
-  { icon: Heart, title: "Hechos con Amor", desc: "El sabor que te hará volver por más." },
+  { icon: Sunset, title: "Vista Panorámica", desc: "Los mejores atardeceres de la ciudad desde las alturas." },
+  { icon: Music, title: "Música en Vivo", desc: "Acompaña tu velada con sets acústicos y DJ en vivo." },
+  { icon: GlassWater, title: "Coctelería de Autor", desc: "Mixología premium con toques italianos." },
+  { icon: UtensilsCrossed, title: "Cucina Auténtica", desc: "Recetas tradicionales con ingredientes de primer nivel." },
 ];
 
 // --- Animation Variants ---
-const staggerContainer: any = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
-};
-const fadeUp: any = {
-  hidden: { opacity: 0, y: 40 },
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: "easeOut" } }
+} as const;
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: { staggerChildren: 0.2 }
+  }
 };
-
-// --- Melting Card Component ---
-function MeltingCard({ item, WHATSAPP_NUMBER }: { item: any, WHATSAPP_NUMBER: string }) {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const imgRef = useRef<HTMLImageElement>(null);
-  const dispMapRef = useRef<SVGFEDisplacementMapElement>(null);
-  
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (prefersReducedMotion) return;
-
-    let animationFrameId: number;
-    
-    // Continuous loop to check distance to center
-    const animate = () => {
-      if (cardRef.current && dispMapRef.current) {
-        const rect = cardRef.current.getBoundingClientRect();
-        
-        // Center of the card on the X axis
-        const cardCenter = rect.left + rect.width / 2;
-        // Center of the viewport on the X axis
-        const windowCenter = window.innerWidth / 2;
-        
-        // Absolute distance from the center
-        const dist = Math.abs(cardCenter - windowCenter);
-        // Normalize distance (0 when perfectly centered, 1 when completely off edge)
-        // We use window.innerWidth / 1.5 as a reasonable falloff threshold
-        const normalizedDist = Math.min(dist / (window.innerWidth / 1.5), 1);
-        
-        // Map normalized distance to filter scale (0 to 45 max distortion)
-        const meltValue = Math.pow(normalizedDist, 2) * 45; 
-        
-        // Scale: Center is 1.1, edges are 0.85
-        const scaleValue = 1.1 - (normalizedDist * 0.25);
-        
-        // Blur: Center is 0px, edges up to 8px
-        const blurValue = normalizedDist * 8;
-        
-        // Opacity: Center is 1, edges is 0.4
-        const opacityValue = 1 - (normalizedDist * 0.6);
-
-        // Shadow fades in when centered
-        const shadowOpacity = Math.max(0, 0.2 - (normalizedDist * 0.2));
-
-        // Use gsap.set for instant updates on every frame without lagging
-        gsap.set(dispMapRef.current, { attr: { scale: meltValue } });
-        gsap.set(cardRef.current, { 
-          scale: scaleValue, 
-          opacity: opacityValue,
-          filter: `blur(${blurValue}px)`
-        });
-        
-        if (imgRef.current) {
-          gsap.set(imgRef.current, {
-            filter: `url(#melt-${item.id}) drop-shadow(0 20px 30px rgba(122, 22, 32, ${shadowOpacity}))`
-          });
-        }
-      }
-      animationFrameId = requestAnimationFrame(animate);
-    };
-
-    animate();
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [item.id]);
-
-  return (
-    <div className="shrink-0 w-[85vw] md:w-[400px] h-auto snap-center relative py-12">
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
-        <filter id={`melt-${item.id}`} x="-20%" y="-20%" width="140%" height="140%" colorInterpolationFilters="sRGB">
-          <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="1" result="warp" />
-          <feDisplacementMap 
-            ref={dispMapRef}
-            in="SourceGraphic" 
-            in2="warp" 
-            scale="45" // Starts highly melted before JS kicks in
-            xChannelSelector="R" 
-            yChannelSelector="G" 
-          />
-        </filter>
-      </svg>
-
-      <div 
-        ref={cardRef} 
-        className="bg-transparent flex flex-col h-full transform-gpu will-change-transform items-center"
-      >
-        <div className="relative w-full h-[300px] flex items-center justify-center p-4">
-          <img 
-            ref={imgRef}
-            src={item.image} 
-            alt={item.name} 
-            loading="lazy"
-            className="w-full h-full object-contain"
-            style={{ filter: `url(#melt-${item.id})` }}
-          />
-        </div>
-        <div className="p-4 flex flex-col flex-grow text-center w-full">
-          <h3 className="text-2xl font-serif text-foreground mb-3 font-bold">{item.name}</h3>
-          <p className="text-sm text-foreground/60 mb-6 flex-grow leading-relaxed">
-            {item.description}
-          </p>
-          <div className="text-3xl font-serif text-foreground font-bold mb-6">
-            {item.price}
-          </div>
-          <a 
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20quisiera%20pedir%20un%20${encodeURIComponent(item.name)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block w-full max-w-[200px] mx-auto py-4 bg-accent text-white rounded-full font-bold hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20 hover:-translate-y-1"
-          >
-            Comprar
-          </a>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function LandingPage() {
-  const [activeCategory, setActiveCategory] = useState("Helados Artesanales");
+  const [activeCategory, setActiveCategory] = useState("Entradas");
+  const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
-  
-  const [scrollProgress, setScrollProgress] = useState(0);
-  const galleryRef = useRef<HTMLDivElement>(null);
-  
-  // Custom progress bar logic
-  const handleGalleryScroll = useCallback(() => {
-    if (galleryRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = galleryRef.current;
-      const maxScroll = scrollWidth - clientWidth;
-      const progress = maxScroll > 0 ? scrollLeft / maxScroll : 0;
-      setScrollProgress(progress);
-    }
-  }, []);
-
-  useGSAP(() => {
-    // Hero slow viscosity loop
-    gsap.to("#hero-turbulence", {
-      attr: { baseFrequency: "0.01 0.03" },
-      repeat: -1,
-      yoyo: true,
-      duration: 8,
-      ease: "sine.inOut"
-    });
-  });
+  const [reviews, setReviews] = useState<any[]>(TESTIMONIALS);
+  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
-    // Force scroll to top on reload
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual';
+    async function loadData() {
+      const userRes = await getCurrentUserAction();
+      if (userRes) setCurrentUser(userRes);
+
+      const reviewsRes = await getActiveReviews();
+      if (reviewsRes.reviews && reviewsRes.reviews.length > 0) {
+        setReviews(reviewsRes.reviews);
+      }
     }
-    window.scrollTo(0, 0);
+    loadData();
+  }, []);
 
-    // Initial check for navbar
-    setIsScrolled(window.scrollY > 20);
-
+  useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setIsScrolled(window.scrollY > 50);
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // React state for Dragging
-  const isDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (!galleryRef.current) return;
-    isDown.current = true;
-    galleryRef.current.style.cursor = 'grabbing';
-    galleryRef.current.style.scrollSnapType = 'none'; // Disable snap while dragging
-    startX.current = e.pageX - galleryRef.current.offsetLeft;
-    scrollLeft.current = galleryRef.current.scrollLeft;
-  };
-  const handleMouseLeave = () => {
-    isDown.current = false;
-    if (galleryRef.current) {
-      galleryRef.current.style.cursor = '';
-      galleryRef.current.style.scrollSnapType = ''; 
-    }
-  };
-  const handleMouseUp = () => {
-    isDown.current = false;
-    if (galleryRef.current) {
-      galleryRef.current.style.cursor = '';
-      galleryRef.current.style.scrollSnapType = ''; 
-    }
-  };
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDown.current || !galleryRef.current) return;
-    e.preventDefault();
-    const x = e.pageX - galleryRef.current.offsetLeft;
-    const walk = (x - startX.current) * 2; // scroll-fast multiplier
-    galleryRef.current.scrollLeft = scrollLeft.current - walk;
-    handleGalleryScroll();
-  };
-
-  const scrollGallery = (direction: 'left' | 'right') => {
-    if (galleryRef.current) {
-      const scrollAmount = window.innerWidth > 768 ? 400 : window.innerWidth * 0.8;
-      galleryRef.current.scrollBy({ 
-        left: direction === 'left' ? -scrollAmount : scrollAmount, 
-        behavior: 'smooth' 
-      });
-    }
-  };
+  // Testimonial auto-play based on dynamic reviews
+  useEffect(() => {
+    if (reviews.length <= 1) return;
+    const interval = setInterval(() => {
+      setTestimonialIndex((prev) => (prev + 1) % reviews.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [reviews]);
 
   const filteredMenu = MENU_ITEMS.filter(item => item.category === activeCategory);
 
-  const WHATSAPP_NUMBER = "593997338788";
-  const WHATSAPP_LINK = `https://wa.me/${WHATSAPP_NUMBER}?text=Hola,%20quisiera%20más%20información%20sobre%20sus%20helados`;
-
   return (
-    <main className="min-h-screen selection:bg-accent selection:text-white">
+    <main className="min-h-screen bg-background text-foreground font-sans selection:bg-accent selection:text-background">
       
-      {/* NAVBAR */}
-      <nav 
-        className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-background/90 backdrop-blur-md py-4 shadow-sm' : 'bg-transparent py-6'}`}
-      >
-        <div className="max-w-7xl mx-auto px-6 flex justify-between items-center relative">
-          <a href="#" className="flex items-center z-10">
-            <Image 
-              src="/images/logo-transparent.png" 
-              unoptimized
-              alt="Avita Logo" 
-              width={180} 
-              height={50}
-              priority
-              className="h-14 w-auto object-contain"
-            />
-          </a>
-
-          <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-10">
-            <a href="#nosotros" className="group flex items-center gap-2 text-sm text-foreground font-semibold hover:text-accent transition-colors">
-              <Heart className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-              Nosotros
-            </a>
-            <a href="#menu" className="group flex items-center gap-2 text-sm text-foreground font-semibold hover:text-accent transition-colors">
-              <IceCream2 className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-              Menú
-            </a>
-            <a href="#ubicacion" className="group flex items-center gap-2 text-sm text-foreground font-semibold hover:text-accent transition-colors">
-              <MapPin className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-              Ubicación
-            </a>
-          </div>
+      {/* 1. HERO / PORTADA */}
+      <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
+        {/* Background Parallax Image & Overlays */}
+        <motion.div 
+          className="absolute inset-0 z-0"
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+        >
+          {/* Base darkening overlay */}
+          <div className="absolute inset-0 bg-black/50 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-black/40 z-10" />
           
-          <div className="flex items-center gap-4">
-            <div className="hidden md:flex items-center gap-3">
-              <a href="https://www.facebook.com/" target="_blank" rel="noopener noreferrer" className="p-2 bg-surface rounded-full text-foreground hover:text-white hover:bg-accent transition-colors">
-                <FacebookIcon className="w-4 h-4" />
+          {/* Grain texture overlay para toque editorial */}
+          <div className="absolute inset-0 z-10 opacity-20 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
+
+          <Image 
+            src="/images/hero-bg.png" 
+            alt="Antoniette Rooftop con vista a la ciudad" 
+            fill
+            priority
+            className="object-cover object-center"
+          />
+        </motion.div>
+
+        {/* Navbar */}
+        <motion.nav 
+          className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled ? 'bg-[#1A1D18]/95 backdrop-blur-md py-4 border-b border-surface-border shadow-lg shadow-black/20' : 'bg-transparent py-6'}`}
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          transition={{ duration: 0.8 }}
+        >
+          <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
+            {/* Logo y Badge de Abierto */}
+            <div className="flex items-center gap-6">
+              <a href="#" className="flex items-center">
+                <Image 
+                  src="/images/logo-transparent.png" 
+                  alt="Antoniette Logo" 
+                  width={200} 
+                  height={56}
+                  priority
+                  className="h-14 w-auto object-contain"
+                />
               </a>
-              <a href="https://www.instagram.com/avita_ice_cream/" target="_blank" rel="noopener noreferrer" className="p-2 bg-surface rounded-full text-foreground hover:text-white hover:bg-accent transition-colors">
-                <InstagramIcon className="w-4 h-4" />
-              </a>
-              <a href="https://www.tiktok.com/@heladeriaavita" target="_blank" rel="noopener noreferrer" className="p-2 bg-surface rounded-full text-foreground hover:text-white hover:bg-accent transition-colors">
-                <TikTokIcon className="w-4 h-4" />
-              </a>
+              
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full border border-surface-border bg-black/20 backdrop-blur-sm">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+                <span className="text-xs uppercase tracking-widest text-foreground/80 font-light">Abierto ahora</span>
+              </div>
             </div>
-            <a 
-              href={WHATSAPP_LINK}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="px-6 py-3 bg-accent text-white rounded-full font-bold hover:bg-accent-hover transition-colors shadow-md shadow-accent/20 hover:shadow-lg hover:shadow-accent/40 hover:-translate-y-0.5 duration-300"
-            >
-              Pedir Ahora
-            </a>
+
+            <div className="flex items-center gap-6">
+              {currentUser ? (
+                <div className="flex items-center gap-4">
+                  {currentUser.role === 'ADMIN' && (
+                    <Link href="/admin" className="text-xs uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors hidden sm:block">
+                      Admin
+                    </Link>
+                  )}
+                  {currentUser.role === 'EMPLEADO' && (
+                    <Link href="/empleado" className="text-xs uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors hidden sm:block">
+                      Empleado
+                    </Link>
+                  )}
+                  {currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO' && (
+                    <Link href="/mis-reservas" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors hidden sm:block">
+                      Mis Reservas
+                    </Link>
+                  )}
+                  <LogoutButton className="text-xs uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors bg-transparent border-0 p-0 cursor-pointer">
+                    Salir
+                  </LogoutButton>
+                </div>
+              ) : (
+                <Link href="/login" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
+                  Iniciar Sesión
+                </Link>
+              )}
+
+              {(!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO')) && (
+                <Link 
+                  href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
+                  className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-background transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
+                >
+                  Reservar Mesa
+                </Link>
+              )}
+            </div>
           </div>
-        </div>
-      </nav>
+        </motion.nav>
 
-      {/* HERO SECTION */}
-      <section className="relative pt-32 pb-32 lg:pt-48 lg:pb-48 bg-background z-40">
-        
-        {/* Animated Background Blobs (Melt System Aura) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <motion.div 
-            animate={{ 
-              x: [0, 60, 0], 
-              y: [0, 40, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-[10%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-accent/15 blur-[120px] mix-blend-multiply"
-          />
-          <motion.div 
-            animate={{ 
-              x: [0, -50, 0], 
-              y: [0, 60, 0],
-              scale: [1, 1.2, 1]
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
-            className="absolute top-[20%] -right-[15%] w-[50vw] h-[50vw] rounded-full bg-secondary/15 blur-[130px] mix-blend-multiply"
-          />
-          <motion.div 
-            animate={{ 
-              x: [0, 40, 0], 
-              y: [0, -40, 0],
-            }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 5 }}
-            className="absolute -bottom-[20%] left-[20%] w-[70vw] h-[70vw] rounded-full bg-[#8FAE7A]/15 blur-[140px] mix-blend-multiply"
-          />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-12 items-center relative z-10">
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1, ease: "easeOut" }}
-            className="space-y-8 text-center lg:text-left"
+        {/* Hero Content */}
+        <div className="relative z-20 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+          <motion.p 
+            className="text-xs md:text-sm text-accent tracking-[0.3em] uppercase mb-6 font-medium"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.1 }}
           >
-            <h1 
-              className="text-5xl lg:text-7xl font-serif text-accent leading-[1.1] tracking-tight transform-gpu will-change-transform"
-              style={{ filter: "url(#melt-hero)" }}
+            DESDE 2020 · SANTO DOMINGO
+          </motion.p>
+          <motion.h1 
+            className="font-playfair text-5xl md:text-7xl lg:text-8xl text-foreground mb-4 tracking-tight drop-shadow-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+          >
+            Antoniette
+          </motion.h1>
+          <motion.p 
+            className="text-lg md:text-xl text-foreground/90 font-light tracking-[0.2em] uppercase mb-10 drop-shadow-md"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.8, delay: 0.6 }}
+          >
+            Rooftop & Cucina Italiana
+          </motion.p>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.8 }}
+          >
+            <a 
+              href="#reservas"
+              className="group relative inline-flex items-center justify-center px-8 py-4 bg-accent text-[#1A1D18] font-semibold tracking-widest uppercase overflow-hidden hover:scale-105 transition-transform duration-300"
             >
-              EL SABOR QUE <br/>
-              <span className="text-foreground">TE HARÁ VOLVER</span>
-            </h1>
-            <p className="text-lg text-foreground/80 font-medium max-w-md mx-auto lg:mx-0 leading-relaxed">
-              Disfruta de nuestros deliciosos frappés, waffles y helados artesanales elaborados con los mejores ingredientes naturales.
-            </p>
-            <div className="pt-4">
-              <a 
-                href="#menu"
-                className="inline-flex px-10 py-4 bg-accent text-white rounded-full font-bold text-lg hover:bg-accent-hover transition-all shadow-lg shadow-accent/30 hover:shadow-xl hover:-translate-y-1"
-              >
-                Ver Menú
-              </a>
-            </div>
-          </motion.div>
-
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9, rotate: 5 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1.2, ease: "easeOut" }}
-            className="relative"
-          >
-            <div className="relative w-full aspect-square max-w-lg mx-auto">
-              <Image 
-                src="/images/hero-bg.png" 
-                unoptimized
-                alt="Helado Artesanal Avita" 
-                fill
-                priority
-                className="object-contain drop-shadow-2xl"
-              />
-            </div>
+              <span className="relative z-10">Vive la experiencia</span>
+              <div className="absolute inset-0 h-full w-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
+            </a>
           </motion.div>
         </div>
-        
-        <DripDivider color="var(--surface)" position="bottom-inside" />
+
+        {/* Scroll Indicator */}
+        <motion.div 
+          className="absolute bottom-10 z-20"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.2, duration: 1 }}
+        >
+          <motion.div
+            animate={{ y: [0, 8, 0] }}
+            transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+            className="cursor-pointer"
+          >
+            <ChevronDown className="text-accent w-8 h-8 opacity-80" />
+          </motion.div>
+        </motion.div>
       </section>
 
-      {/* FEATURES */}
-      <section id="nosotros" className="py-24 bg-surface relative z-30 scroll-mt-24">
-        <div className="max-w-6xl mx-auto px-6">
+      {/* 2. SOBRE NOSOTROS / CONCEPTO */}
+      <section className="py-24 md:py-32 px-6 relative overflow-hidden bg-background">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <motion.div 
-            className="grid md:grid-cols-3 gap-12"
-            variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUp}
+            className="space-y-8"
+          >
+            <h2 className="font-playfair text-4xl md:text-5xl text-accent">La Altura del Sabor</h2>
+            <div className="h-px w-24 bg-accent/50" />
+            <p className="text-foreground/80 text-lg leading-relaxed font-light">
+              Ubicado en lo alto de la ciudad, Antoniette redefine la gastronomía italiana fusionando recetas clásicas con técnicas contemporáneas en un ambiente vibrante.
+            </p>
+            <p className="text-foreground/80 text-lg leading-relaxed font-light">
+              Nuestra filosofía es simple: ingredientes de la más alta calidad, pasión por el detalle y un entorno que transforma cada cena en una ocasión inolvidable.
+            </p>
+          </motion.div>
+          
+          <motion.div 
+            className="relative h-[500px] md:h-[600px] w-full"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-100px" }}
+            variants={fadeUp}
+          >
+            <div className="absolute inset-0 bg-accent/20 translate-x-4 translate-y-4 rounded-sm" />
+            <Image 
+              src="/images/concepto-plato.png" 
+              alt="Cucina Italiana Pasta Auténtica" 
+              fill
+              priority
+              className="object-cover rounded-sm"
+            />
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3. MENÚ DESTACADO */}
+      <section className="py-24 bg-surface relative">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
+            className="text-center mb-16 space-y-4"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeUp}
+          >
+            <h2 className="font-playfair text-4xl md:text-5xl text-accent">Il Menù</h2>
+            <p className="text-foreground/70 tracking-widest uppercase text-sm">Selección de Autor</p>
+          </motion.div>
+
+          {/* Categorías Tabs */}
+          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
+            {MENU_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`text-sm md:text-base tracking-widest uppercase transition-all duration-300 pb-2 border-b-2 ${
+                  activeCategory === cat 
+                    ? 'border-accent text-accent' 
+                    : 'border-transparent text-foreground/50 hover:text-foreground'
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Grid de Platos */}
+          <motion.div 
+            className="grid md:grid-cols-2 gap-x-12 gap-y-10"
+            variants={staggerContainer}
+            initial="hidden"
+            animate="visible"
+            key={activeCategory} // Force re-render on category change
+          >
+            {filteredMenu.map((item) => (
+              <motion.div 
+                key={item.id} 
+                variants={fadeUp}
+                className="group flex gap-6 items-center p-4 hover:bg-background/50 rounded-lg transition-colors duration-300 cursor-pointer"
+              >
+                <div className="relative w-24 h-24 md:w-32 md:h-32 shrink-0 overflow-hidden rounded-md">
+                  <img 
+                    src={item.image} 
+                    alt={item.name} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h3 className="font-playfair text-xl md:text-2xl text-foreground group-hover:text-accent transition-colors">{item.name}</h3>
+                    <span className="font-playfair text-xl text-accent">{item.price}</span>
+                  </div>
+                  <p className="text-sm text-foreground/60 font-light leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+          
+          <div className="mt-16 text-center">
+            <a href="#reservas" className="text-accent uppercase tracking-widest text-sm border-b border-accent pb-1 hover:text-accent-hover transition-colors">
+              Descargar Menú Completo
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 4. EXPERIENCIA ROOFTOP */}
+      <section className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-6">
+          <motion.div 
+            className="grid md:grid-cols-4 gap-8"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-50px" }}
           >
             {FEATURES.map((feature, idx) => {
               const Icon = feature.icon;
               return (
                 <motion.div 
-                  key={idx}
+                  key={idx} 
                   variants={fadeUp}
-                  className="group flex flex-col items-center text-center space-y-4 p-6 rounded-3xl hover:bg-background transition-colors duration-500"
+                  className="text-center p-6 border border-surface-border rounded-lg hover:border-accent/50 transition-colors duration-300"
                 >
-                  <div className="w-20 h-20 rounded-full bg-background text-accent flex items-center justify-center mb-2 shadow-sm transition-transform duration-500 group-hover:scale-110 group-hover:shadow-md">
-                    <Icon className="w-10 h-10 transition-all duration-500" style={{ filter: "url(#melt-hover)" }} />
+                  <div className="mx-auto w-16 h-16 bg-surface rounded-full flex items-center justify-center mb-6">
+                    <Icon className="w-8 h-8 text-accent" strokeWidth={1.5} />
                   </div>
-                  <h3 className="text-xl font-serif text-foreground">{feature.title}</h3>
-                  <p className="text-foreground/70">{feature.desc}</p>
+                  <h3 className="font-playfair text-xl mb-3">{feature.title}</h3>
+                  <p className="text-foreground/60 text-sm font-light leading-relaxed">{feature.desc}</p>
                 </motion.div>
               )
             })}
@@ -444,157 +405,213 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* MENU / MELTING GALLERY */}
-      <section className="pt-32 pb-12 bg-surface relative z-20">
-        <div id="menu" className="max-w-7xl mx-auto px-6 mb-16 text-center scroll-mt-28">
+      {/* 5. GALERÍA / AMBIENTE (Masonry/Grid) */}
+      <section className="py-0 overflow-hidden">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+          {GALLERY_IMAGES.map((src, idx) => (
+            <motion.div 
+              key={idx}
+              className="relative aspect-square overflow-hidden group"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: idx * 0.1, duration: 0.8 }}
+            >
+              <img 
+                src={src} 
+                alt={`Ambiente ${idx}`} 
+                className="w-full h-full object-cover group-hover:scale-105 group-hover:opacity-60 transition-all duration-700"
+              />
+              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <InstagramIcon className="w-8 h-8 text-accent" />
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* 6. TESTIMONIOS */}
+      <section className="py-32 bg-surface relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
+        
+        <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
+          <QuoteIcon className="w-16 h-16 text-accent/30 mx-auto mb-8" />
+          
+          <div className="h-[200px] flex items-center justify-center">
+            <AnimatePresence mode="wait">
+              {reviews.length > 0 && (
+                <motion.div
+                  key={testimonialIndex}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.5 }}
+                  className="space-y-6"
+                >
+                  <div className="flex justify-center gap-1 text-accent">
+                    {[...Array(reviews[testimonialIndex].rating)].map((_, i) => (
+                      <Star key={i} className="w-5 h-5 fill-current" />
+                    ))}
+                  </div>
+                  <p className="font-playfair text-2xl md:text-3xl italic leading-relaxed text-foreground/90">
+                    "{reviews[testimonialIndex].text}"
+                  </p>
+                  <p className="tracking-widest uppercase text-sm text-foreground/50">
+                    — {reviews[testimonialIndex].name}
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
+          <div className="flex justify-center gap-2 mt-8">
+            {reviews.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setTestimonialIndex(idx)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  idx === testimonialIndex ? 'bg-accent w-8' : 'bg-surface-border hover:bg-accent/50'
+                }`}
+                aria-label={`Ver testimonio ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECCIÓN ESCRIBIR RESEÑA */}
+      <section className="py-16 bg-background border-t border-surface-border">
+        <ReviewForm user={currentUser} />
+      </section>
+
+      {/* 7. UBICACIÓN Y RESERVAS */}
+      <section id="reservas" className="py-24 bg-background">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16">
           <motion.div 
-            className="space-y-4"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
+            className="space-y-10"
           >
-            <h2 className="text-4xl md:text-5xl font-serif text-accent tracking-tight">
-              TÚ SOLO MIRA ESTOS POSTRES
-            </h2>
-            <p className="text-foreground/70 text-lg">
-              Elige tu categoría favorita
-            </p>
+            <div>
+              <h2 className="font-playfair text-4xl md:text-5xl text-accent mb-4">Visítanos</h2>
+              <p className="text-foreground/70">Vive una experiencia única en las alturas. Se recomienda reservar con anticipación.</p>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="flex items-start gap-4">
+                <MapPin className="w-6 h-6 text-accent shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-medium uppercase tracking-widest text-sm mb-1">Dirección</h4>
+                  <p className="text-foreground/70 font-light">QR3R+3QC, Av. Yamboya<br/>Santo Domingo</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Clock className="w-6 h-6 text-accent shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-medium uppercase tracking-widest text-sm mb-1">Horario</h4>
+                  <p className="text-foreground/70 font-light">Lunes a Sábado<br/>17h00 - 23h00</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-4">
+                <Phone className="w-6 h-6 text-accent shrink-0 mt-1" />
+                <div>
+                  <h4 className="font-medium uppercase tracking-widest text-sm mb-1">Reservas</h4>
+                  <p className="text-foreground/70 font-light">099 897 1785</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Link 
+                href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
+                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-accent text-[#1A1D18] font-bold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm"
+              >
+                Reservar Mesa Online
+              </Link>
+              <a 
+                href="https://wa.me/593998971785?text=Hola,%20quisiera%20hacer%20una%20reserva%20en%20Antoniette%20Rooftop"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 border border-foreground/30 hover:border-foreground text-foreground font-semibold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm"
+              >
+                Reservar por WhatsApp
+              </a>
+            </div>
           </motion.div>
 
+          {/* Formulario / Mapa */}
           <motion.div 
-            className="flex flex-wrap justify-center gap-3 mt-10"
-            variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-50px" }}
+            viewport={{ once: true }}
+            variants={fadeUp}
+            className="h-[400px] md:h-full min-h-[400px] bg-surface rounded-lg overflow-hidden border border-surface-border relative grayscale hover:grayscale-0 transition-all duration-700"
           >
-            {MENU_CATEGORIES.map((category) => (
-              <motion.button
-                key={category}
-                variants={fadeUp}
-                onClick={() => setActiveCategory(category)}
-                className={`px-6 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
-                  activeCategory === category 
-                    ? 'bg-foreground text-surface shadow-md scale-105'
-                    : 'bg-surface-border/50 text-foreground/80 hover:bg-surface-border hover:text-foreground'
-                }`}
-              >
-                {category}
-              </motion.button>
-            ))}
+            <iframe 
+              src="https://www.google.com/maps?q=QR3R%2B3QC,+Av.+Yamboya,+Santo+Domingo&output=embed" 
+              width="100%" 
+              height="100%" 
+              style={{ border: 0 }} 
+              allowFullScreen={false} 
+              loading="lazy"
+              title="Mapa de Ubicación Antoniette"
+              className="absolute inset-0"
+            />
           </motion.div>
         </div>
-
-        {/* Horizontal/Vertical Drag Gallery Container */}
-        <div className="relative group max-w-[100vw]">
-          {/* Left Arrow */}
-          <button 
-            onClick={() => scrollGallery('left')}
-            className="absolute left-4 md:left-12 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-background/90 backdrop-blur-md rounded-full shadow-xl border border-surface-border text-foreground hover:bg-accent hover:text-white transition-all opacity-80 md:opacity-0 md:group-hover:opacity-100 hover:scale-110"
-            aria-label="Anterior"
-          >
-            <ChevronLeft className="w-6 h-6 md:w-8 md:h-8" />
-          </button>
-
-          {/* Right Arrow */}
-          <button 
-            onClick={() => scrollGallery('right')}
-            className="absolute right-4 md:right-12 top-1/2 -translate-y-1/2 z-20 p-3 md:p-4 bg-background/90 backdrop-blur-md rounded-full shadow-xl border border-surface-border text-foreground hover:bg-accent hover:text-white transition-all opacity-80 md:opacity-0 md:group-hover:opacity-100 hover:scale-110"
-            aria-label="Siguiente"
-          >
-            <ChevronRight className="w-6 h-6 md:w-8 md:h-8" />
-          </button>
-
-          <div 
-            ref={galleryRef}
-            onScroll={handleGalleryScroll}
-            onMouseDown={handleMouseDown}
-            onMouseLeave={handleMouseLeave}
-            onMouseUp={handleMouseUp}
-            onMouseMove={handleMouseMove}
-            className="w-full flex md:flex-row flex-col gap-6 md:gap-12 overflow-x-auto md:overflow-y-hidden overflow-y-auto px-[7.5vw] md:px-[calc(50vw-200px)] pb-4 pt-10 snap-y md:snap-x snap-mandatory hide-scrollbar items-center md:items-stretch will-change-scroll"
-          >
-            {filteredMenu.map((item) => (
-              <MeltingCard key={`${activeCategory}-${item.id}`} item={item} WHATSAPP_NUMBER={WHATSAPP_NUMBER} />
-            ))}
-          </div>
-        </div>
-
-        <DripDivider color="var(--surface)" position="bottom" />
       </section>
 
-      {/* FOOTER */}
-      <footer id="ubicacion" className="bg-foreground text-background pt-36 pb-12 relative z-10 overflow-hidden">
-        {/* Drip Texture Background overlay */}
-        <div 
-          className="absolute inset-0 opacity-5 pointer-events-none"
-          style={{ maskImage: 'linear-gradient(to bottom, transparent, black 150px)', WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 150px)' }}
-        >
-          {/* Repeating drip svg for texture */}
-          <div className="w-full h-full bg-[url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMTAwIDEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cGF0aCBkPSJNMCAwQzI1IDI1IDI1IDUwIDUwIDUwQzc1IDUwIDc1IDI1IDEwMCAwWiIgZmlsbD0id2hpdGUiLz48L3N2Zz4=')] bg-[length:100px_100px] repeat" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-6 relative z-10">
-          <div className="flex flex-col items-center text-center space-y-8">
-            <Image 
-              src="/images/logo-transparent.png" 
-              unoptimized
-              alt="Avita Logo" 
-              width={200} 
-              height={80}
-              className="h-12 md:h-16 w-auto object-contain"
-            />
-            
-            <div className="flex items-center gap-2 font-medium bg-background/10 backdrop-blur-sm px-8 py-4 rounded-full border border-white/10">
-              <MapPin className="w-5 h-5 text-accent" />
-              Frente al Parque Helen Tenka
-            </div>
-
-            <div className="flex gap-6">
-              <a href="https://www.instagram.com/avita_ice_cream/" target="_blank" rel="noopener noreferrer" className="p-4 bg-background/10 backdrop-blur-sm border border-white/10 rounded-full hover:bg-accent transition-colors">
-                <InstagramIcon className="w-6 h-6" />
-              </a>
-              <a href="https://www.tiktok.com/@heladeriaavita" target="_blank" rel="noopener noreferrer" className="p-4 bg-background/10 backdrop-blur-sm border border-white/10 rounded-full hover:bg-accent transition-colors">
-                <TikTokIcon className="w-6 h-6" />
-              </a>
-            </div>
-
-            <div className="w-full h-px bg-white/10 max-w-2xl mx-auto my-6" />
-
-            <p className="text-sm text-background/50 font-medium font-sans">
-              &copy; {new Date().getFullYear()} Avita Ice Cream & Waffles. Todos los derechos reservados.
-            </p>
+      {/* 8. FOOTER */}
+      <footer className="bg-surface border-t border-surface-border py-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center text-center space-y-6">
+          <h2 className="font-playfair text-3xl text-accent tracking-widest uppercase">
+            A<span className="text-foreground">ntoniette</span>
+          </h2>
+          
+          <div className="flex gap-4">
+            <a href="https://instagram.com/antoniette.ec" target="_blank" rel="noopener noreferrer" className="p-3 bg-background rounded-full text-foreground/70 hover:text-accent hover:bg-accent/10 transition-colors">
+              <InstagramIcon className="w-5 h-5" />
+            </a>
           </div>
+
+          <p className="text-sm text-foreground/50 font-light mt-8">
+            &copy; {new Date().getFullYear()} Antoniette Rooftop & Cucina Italiana. Todos los derechos reservados.
+          </p>
         </div>
       </footer>
     </main>
   );
 }
 
-// Icons
+// Icono decorativo de comillas
+function QuoteIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z" />
+    </svg>
+  )
+}
+
 function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      {...props}
+    >
       <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
       <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
       <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
-
-function TikTokIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-    </svg>
-  );
-}
-
-function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
     </svg>
   );
 }

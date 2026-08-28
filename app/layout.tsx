@@ -1,25 +1,23 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
-import { MeltFilters } from "@/components/ui/MeltFilters";
-
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
-  subsets: ["latin"],
-  axes: ["opsz", "SOFT", "WONK"],
-});
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
-  title: "Avita | Ice Cream & Waffles",
-  description: "El sabor que te hará volver. Frappés, waffles y helados artesanales.",
+  title: "Antoniette | Rooftop & Cucina Italiana",
+  description: "Cucina Italiana con vista a la ciudad en Río Yamboya y Caracas. Reserva tu experiencia gastronómica.",
   openGraph: {
-    title: "Avita | Ice Cream & Waffles",
-    description: "El sabor que te hará volver. Frappés, waffles y helados artesanales.",
+    title: "Antoniette | Rooftop & Cucina Italiana",
+    description: "Cucina Italiana con vista a la ciudad. Reserva tu experiencia gastronómica.",
     type: "website",
     locale: "es_EC",
   }
@@ -33,15 +31,9 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${fraunces.variable} ${inter.variable} h-full antialiased scroll-smooth`}
+      className={`${inter.variable} ${playfair.variable} h-full antialiased scroll-smooth`}
     >
       <body className="min-h-full flex flex-col font-sans bg-background text-foreground overflow-x-hidden">
-        {/* Global Noise Overlay for premium matte feel */}
-        <div 
-          className="pointer-events-none fixed inset-0 z-[100] h-full w-full opacity-[0.035] mix-blend-overlay" 
-          style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }}
-        />
-        <MeltFilters />
         {children}
       </body>
     </html>
