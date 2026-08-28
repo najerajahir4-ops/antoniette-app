@@ -215,8 +215,8 @@ export default function LandingPage() {
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
           {/* Base darkening overlay */}
-          <div className="absolute inset-0 bg-black/40 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-black/60 z-10" />
+          <div className="absolute inset-0 bg-black/35 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/15 to-black/55 z-10" />
           
           {/* Grain texture overlay para toque editorial */}
           <div className="absolute inset-0 z-10 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
@@ -226,7 +226,7 @@ export default function LandingPage() {
             alt="Interior y terraza exclusiva de Antoniette Italian Rooftop" 
             fill
             priority
-            className="object-cover object-[center_35%]"
+            className="object-cover object-center"
           />
         </motion.div>
 
