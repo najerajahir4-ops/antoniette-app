@@ -15,10 +15,6 @@ import {
   UtensilsCrossed 
 } from "lucide-react";
 import { getActiveReviews } from "@/app/actions/reviews";
-import { ReviewForm } from "@/components/store/ReviewForm";
-import { getCurrentUserAction } from "@/app/actions/auth";
-import { LogoutButton } from "@/components/ui/LogoutButton";
-import Link from "next/link";
 
 // --- Mock Data ---
 
@@ -76,13 +72,9 @@ export default function LandingPage() {
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [reviews, setReviews] = useState<any[]>(TESTIMONIALS);
-  const [currentUser, setCurrentUser] = useState<any>(null);
 
   useEffect(() => {
     async function loadData() {
-      const userRes = await getCurrentUserAction();
-      if (userRes) setCurrentUser(userRes);
-
       const reviewsRes = await getActiveReviews();
       if (reviewsRes.reviews && reviewsRes.reviews.length > 0) {
         setReviews(reviewsRes.reviews);
@@ -165,42 +157,22 @@ export default function LandingPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-6">
-              {currentUser ? (
-                <div className="flex items-center gap-4">
-                  {currentUser.role === 'ADMIN' && (
-                    <Link href="/admin" className="text-xs uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors hidden sm:block">
-                      Admin
-                    </Link>
-                  )}
-                  {currentUser.role === 'EMPLEADO' && (
-                    <Link href="/empleado" className="text-xs uppercase tracking-widest text-accent font-semibold hover:text-accent-hover transition-colors hidden sm:block">
-                      Empleado
-                    </Link>
-                  )}
-                  {currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO' && (
-                    <Link href="/mis-reservas" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors hidden sm:block">
-                      Mis Reservas
-                    </Link>
-                  )}
-                  <LogoutButton className="text-xs uppercase tracking-widest text-red-400/80 hover:text-red-400 transition-colors bg-transparent border-0 p-0 cursor-pointer">
-                    Salir
-                  </LogoutButton>
-                </div>
-              ) : (
-                <Link href="/login" className="text-xs uppercase tracking-widest text-foreground/80 hover:text-accent transition-colors">
-                  Iniciar Sesión
-                </Link>
-              )}
+            {/* Navegación Desktop */}
+            <div className="hidden md:flex items-center gap-8 text-xs uppercase tracking-widest text-foreground/80 font-medium">
+              <a href="#nosotros" className="hover:text-accent transition-colors">Nosotros</a>
+              <a href="#menu" className="hover:text-accent transition-colors">Menú</a>
+              <a href="#experiencia" className="hover:text-accent transition-colors">Experiencia</a>
+              <a href="#reservas" className="hover:text-accent transition-colors">Ubicación</a>
+            </div>
 
-              {(!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'EMPLEADO')) && (
-                <Link 
-                  href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
-                  className="px-5 py-2 border border-accent text-accent hover:bg-accent hover:text-background transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
-                >
-                  Reservar Mesa
-                </Link>
-              )}
+            {/* CTA Reservar Mesa */}
+            <div className="flex items-center gap-4">
+              <a 
+                href="#reservas"
+                className="px-5 py-2.5 border border-accent text-accent hover:bg-accent hover:text-[#1A1D18] transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
+              >
+                Reservar Mesa
+              </a>
             </div>
           </div>
         </motion.nav>
@@ -264,7 +236,7 @@ export default function LandingPage() {
       </section>
 
       {/* 2. SOBRE NOSOTROS / CONCEPTO */}
-      <section className="py-24 md:py-32 px-6 relative overflow-hidden bg-background">
+      <section id="nosotros" className="py-24 md:py-32 px-6 relative overflow-hidden bg-background">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-16 items-center">
           <motion.div 
             initial="hidden"
@@ -303,7 +275,7 @@ export default function LandingPage() {
       </section>
 
       {/* 3. MENÚ DESTACADO */}
-      <section className="py-24 bg-surface relative">
+      <section id="menu" className="py-24 bg-surface relative">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             className="text-center mb-16 space-y-4"
@@ -376,7 +348,7 @@ export default function LandingPage() {
       </section>
 
       {/* 4. EXPERIENCIA ROOFTOP */}
-      <section className="py-24 bg-background">
+      <section id="experiencia" className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-6">
           <motion.div 
             className="grid md:grid-cols-4 gap-8"
@@ -480,11 +452,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* SECCIÓN ESCRIBIR RESEÑA */}
-      <section className="py-16 bg-background border-t border-surface-border">
-        <ReviewForm user={currentUser} />
-      </section>
-
       {/* 7. UBICACIÓN Y RESERVAS */}
       <section id="reservas" className="py-24 bg-background">
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-16">
@@ -525,19 +492,19 @@ export default function LandingPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <Link 
-                href={currentUser ? '/reservar' : '/login?redirect=/reservar'}
-                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-accent text-[#1A1D18] font-bold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm"
-              >
-                Reservar Mesa Online
-              </Link>
               <a 
                 href="https://wa.me/593998971785?text=Hola,%20quisiera%20hacer%20una%20reserva%20en%20Antoniette%20Rooftop"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 border border-foreground/30 hover:border-foreground text-foreground font-semibold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 bg-accent text-[#1A1D18] font-bold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm shadow-lg shadow-accent/10"
               >
                 Reservar por WhatsApp
+              </a>
+              <a 
+                href="tel:0998971785"
+                className="inline-flex items-center justify-center w-full sm:w-auto px-8 py-4 border border-foreground/30 hover:border-accent hover:text-accent text-foreground font-semibold tracking-widest uppercase hover:scale-105 transition-transform duration-300 text-center text-xs rounded-sm"
+              >
+                Llamar Directo
               </a>
             </div>
           </motion.div>
