@@ -215,18 +215,18 @@ export default function LandingPage() {
           transition={{ duration: 1.5, ease: "easeOut" }}
         >
           {/* Base darkening overlay */}
-          <div className="absolute inset-0 bg-black/50 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-black/40 z-10" />
+          <div className="absolute inset-0 bg-black/40 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/20 to-black/60 z-10" />
           
           {/* Grain texture overlay para toque editorial */}
-          <div className="absolute inset-0 z-10 opacity-20 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
+          <div className="absolute inset-0 z-10 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
 
           <Image 
-            src="/images/hero-bg.png" 
-            alt="Antoniette Rooftop con vista a la ciudad" 
+            src="/images/hero-real-antoniette.jpg" 
+            alt="Interior y terraza exclusiva de Antoniette Italian Rooftop" 
             fill
             priority
-            className="object-cover object-center"
+            className="object-cover object-[center_35%]"
           />
         </motion.div>
 
