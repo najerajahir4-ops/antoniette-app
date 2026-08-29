@@ -30,3 +30,34 @@ body {
 html {
   scroll-behavior: smooth;
 }
+
+/* Barra de desplazamiento (Scrollbar) ultra fina, transparente y flotante */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(201, 169, 97, 0.35);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(201, 169, 97, 0.7);
+}
+
+::-webkit-scrollbar-button {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* Soporte para navegadores basados en Gecko (Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201, 169, 97, 0.35) transparent;
+}

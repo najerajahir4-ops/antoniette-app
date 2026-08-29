@@ -12,131 +12,289 @@ import {
   GlassWater, 
   Music, 
   Sunset, 
-  UtensilsCrossed 
+  UtensilsCrossed,
+  FileText,
+  Sparkles
 } from "lucide-react";
-import { getActiveReviews } from "@/app/actions/reviews";
 
 // --- Mock Data ---
 
-const MENU_CATEGORIES = ["Entradas", "Pastas", "Pizzas", "Carnes", "Cócteles"];
-const MENU_ITEMS = [
+const MENU_CATEGORIES = [
+  "Antipasti & Ensaladas", 
+  "Pastas & Focaccia", 
+  "Pizzas Artesanales", 
+  "Segundos & Risotto", 
+  "Coctelería & Vinos"
+];
+
+interface MenuItem {
+  id: number;
+  name: string;
+  category: string;
+  description: string;
+  price: string;
+  badge?: string;
+}
+
+const MENU_ITEMS: MenuItem[] = [
+  // --- Antipasti & Ensaladas ---
   { 
     id: 1, 
-    name: "Tabla de Antipasto Antoniette", 
-    category: "Entradas", 
-    description: "Burrata fresca artesanal, jamón serrano, prosciutto di Parma, quesos curados, aceitunas marinadas, dip dulce y tostas.", 
-    price: "$18.00", 
-    image: "/images/instagram/antipasto-tabla.jpg" 
+    name: "Burrata Dolce Vita", 
+    category: "Antipasti & Ensaladas", 
+    price: "$10.00", 
+    badge: "Recomendado", 
+    description: "Burrata cremosa con jamón serrano, dulce de higo, rúcula y nueces crocantes, bañada en aceite de oliva extra virgen." 
   },
   { 
     id: 2, 
-    name: "Carpaccio di Manzo", 
-    category: "Entradas", 
-    description: "Láminas finas de lomo de res, alcaparras baby, lascas de parmesano reggiano y aceite de trufa blanca.", 
-    price: "$15.00", 
-    image: "https://images.unsplash.com/photo-1544358586-8ab07d720b05?auto=format&fit=crop&q=80&w=600" 
+    name: "Charcutería para 2", 
+    category: "Antipasti & Ensaladas", 
+    price: "$20.00", 
+    badge: "Para compartir", 
+    description: "Selección selecta de embutidos y quesos importados, acompañada de frutas de temporada y frutos secos." 
   },
   { 
     id: 3, 
-    name: "Tagliatelle con Bife Tagliata", 
-    category: "Pastas", 
-    description: "Pasta artesanal fresca al dente, corte jugoso de carne en término medio, albahaca y aceite de oliva virgen extra.", 
-    price: "$24.00", 
-    image: "/images/instagram/tagliata-pasta-cocktail.jpg" 
+    name: "Dúo de Focaccia", 
+    category: "Antipasti & Ensaladas", 
+    price: "$8.00", 
+    description: "Una rebanada con mascarpone y frutos rojos, otra con ricotta fresca y jamón serrano." 
   },
   { 
     id: 4, 
-    name: "Pasta Lover Experience", 
-    category: "Pastas", 
-    description: "Taller gastronómico de pasta fresca desde cero: estira, corta, cocina y disfruta con tu acompañante.", 
-    price: "$25.00", 
-    image: "/images/instagram/pasta-lover-club.jpg" 
+    name: "Calamari Fritti", 
+    category: "Antipasti & Ensaladas", 
+    price: "$8.00", 
+    description: "Calamares empanizados al punto crocante perfecto, servidos con salsa golf artesanal y gajo de limón." 
   },
   { 
     id: 5, 
-    name: "Ravioli di Tartufo", 
-    category: "Pastas", 
-    description: "Raviolis artesanales rellenos de ricotta y trufa, salsa suave de mantequilla dorada y salvia fresca.", 
-    price: "$22.00", 
-    image: "https://images.unsplash.com/photo-1587214041042-3ee3f47b59e5?auto=format&fit=crop&q=80&w=600" 
+    name: "Insalata di Burrata", 
+    category: "Antipasti & Ensaladas", 
+    price: "$12.00", 
+    description: "Mix de hojas verdes con burrata entera, tomate deshidratado, rúcula fresca, albahaca y aceite de oliva virgen." 
   },
   { 
     id: 6, 
-    name: "Pizza Napolitana con Burrata", 
-    category: "Pizzas", 
-    description: "Masa madre de lenta fermentación horneada a la piedra, salsa pomodoro, burrata cremosa entera y prosciutto di Parma.", 
-    price: "$18.00", 
-    image: "/images/instagram/pizza-burrata-chef.jpg" 
+    name: "Insalata Mediterránea", 
+    category: "Antipasti & Ensaladas", 
+    price: "$17.00", 
+    description: "Langostinos, calamares y camarones sobre lechuga, frutilla y arándanos en salsa de finas hierbas y mostaza dulce." 
   },
   { 
     id: 7, 
-    name: "Bistecca alla Fiorentina", 
-    category: "Carnes", 
-    description: "Corte premium a la parrilla, sal marina en escamas, romero aromático y guarnición de la casa.", 
-    price: "$35.00", 
-    image: "https://images.unsplash.com/photo-1544025162-882ab2a353d6?auto=format&fit=crop&q=80&w=600" 
+    name: "César con Pollo a la Parrilla", 
+    category: "Antipasti & Ensaladas", 
+    price: "$13.00", 
+    description: "Lechuga romana crujiente, queso parmesano en lascas, tomates cherry, crutones dorados y pechuga de pollo a la brasa." 
   },
   { 
     id: 8, 
-    name: "Cóctel Frozen de Autor", 
-    category: "Cócteles", 
-    description: "Mixología refrescante de autor con hielo frappé, toques cítricos, hierbabuena fresca y licor artesanal.", 
-    price: "$11.00", 
-    image: "/images/instagram/cocktail-autor.jpg" 
+    name: "César con Filete de Salmón", 
+    category: "Antipasti & Ensaladas", 
+    price: "$18.00", 
+    badge: "Premium", 
+    description: "Versión de autor con filete de salmón sellado, lechuga romana, parmesano curado y aderezo especial de la casa." 
   },
+
+  // --- Pastas & Focaccia ---
   { 
     id: 9, 
-    name: "Aperol Spritz", 
-    category: "Cócteles", 
-    description: "Aperol, Prosecco italiano D.O.C., splash de soda y media luna de naranja fresca.", 
-    price: "$10.00", 
-    image: "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&q=80&w=600" 
+    name: "Fettuccine al Pesto con Carne", 
+    category: "Pastas & Focaccia", 
+    price: "$23.00", 
+    badge: "Firma del Chef", 
+    description: "Pasta artesanal fresca al pesto genovés de albahaca y nueces, coronada con medallones de lomo fino jugoso." 
   },
-];
+  { 
+    id: 10, 
+    name: "Spaghetti Frutti di Mare", 
+    category: "Pastas & Focaccia", 
+    price: "$20.00", 
+    badge: "Especialidad Mar", 
+    description: "Pasta al dente con frutos del mar (langostinos, pulpo, almejas, calamar y mejillones) a la reducción de vino blanco." 
+  },
+  { 
+    id: 11, 
+    name: "Lasagna de Carne Tradizionale", 
+    category: "Pastas & Focaccia", 
+    price: "$12.00", 
+    description: "Capas de pasta artesanal con ragù de carne premium, salsa bechamel sedosa y gratén dorado al horno." 
+  },
+  { 
+    id: 12, 
+    name: "Fettuccine a la Carbonara", 
+    category: "Pastas & Focaccia", 
+    price: "$13.00", 
+    description: "Receta italiana auténtica con base de yemas de huevo, parmesano reggiano y tocino ahumado crocante." 
+  },
+  { 
+    id: 13, 
+    name: "Spaghetti Alfredo con Pollo", 
+    category: "Pastas & Focaccia", 
+    price: "$14.00", 
+    description: "Pasta bañada en salsa alfredo cremosa con jamón cocido y parmesano, acompañada de pechuga de pollo a la plancha." 
+  },
+  { 
+    id: 14, 
+    name: "Penne al Ragù", 
+    category: "Pastas & Focaccia", 
+    price: "$14.00", 
+    description: "Penne rigate con ragù casero de carne premium, cocido lentamente durante horas con tomate maduro y vino tinto." 
+  },
+  { 
+    id: 15, 
+    name: "Panini di Focaccia Che Luigi", 
+    category: "Pastas & Focaccia", 
+    price: "$15.00", 
+    badge: "Focaccia de Autor", 
+    description: "Focaccia casera horneada, lomo a la parrilla, mozzarella, tomates cherry asados, pesto, jamón serrano, pepperoni y aceitunas." 
+  },
+  { 
+    id: 16, 
+    name: "Panini di Focaccia Melina", 
+    category: "Pastas & Focaccia", 
+    price: "$14.00", 
+    description: "Focaccia artesanal, burrata, pesto, miel pura, ají en hojuela, jamón serrano, pepperoni, rúcula y tomates frescos." 
+  },
+  { 
+    id: 17, 
+    name: "Panini di Focaccia Florencia", 
+    category: "Pastas & Focaccia", 
+    price: "$13.00", 
+    description: "Focaccia, pesto genovés, burrata fresca, jamón serrano, salami milano, tomate deshidratado, aceitunas verdes y albahaca." 
+  },
 
-const GALLERY_ITEMS = [
-  {
-    src: "/images/instagram/pizza-burrata-chef.jpg",
-    title: "Pizza Artesanal & Burrata",
-    desc: "Masa madre horneada con burrata fresca y prosciutto",
-    tag: "#PizzaNapoletana",
-    link: "https://www.instagram.com/antoniette.ec/"
+  // --- Pizzas Artesanales ---
+  { 
+    id: 18, 
+    name: "Pizza Antoniette", 
+    category: "Pizzas Artesanales", 
+    price: "$16.00", 
+    badge: "La Especialidad", 
+    description: "La joya de la casa: masa madre horneada a la piedra, jamón serrano sobre cama de rúcula, burrata entera cremosa y nueces." 
   },
-  {
-    src: "/images/instagram/tagliata-pasta-cocktail.jpg",
-    title: "Tagliata di Manzo & Pasta",
-    desc: "Cortes seleccionados con pasta fresca y coctelería",
-    tag: "#CucinaItaliana",
-    link: "https://www.instagram.com/antoniette.ec/"
+  { 
+    id: 19, 
+    name: "Pizza By Che Luis", 
+    category: "Pizzas Artesanales", 
+    price: "$16.00", 
+    badge: "Firma Che Luis", 
+    description: "Lomo fino a la parrilla, salami milano, pimiento verde fresco, cebolla perla y abundante mozzarella fundida." 
   },
-  {
-    src: "/images/instagram/antipasto-tabla.jpg",
-    title: "Tabla de Antipasto Antoniette",
-    desc: "Burrata, embutidos italianos, quesos curados y tostas",
-    tag: "#Aperitivo",
-    link: "https://www.instagram.com/antoniette.ec/"
+  { 
+    id: 20, 
+    name: "Pizza Napolitana di Parma", 
+    category: "Pizzas Artesanales", 
+    price: "$15.00", 
+    description: "Jamón serrano seleccionado, mozzarella fundida, tomate deshidratado y orégano silvestre aromático." 
   },
-  {
-    src: "/images/instagram/pasta-lover-club.jpg",
-    title: "Pasta Lover Club",
-    desc: "Talleres para estirar, cortar y crear pasta desde cero",
-    tag: "#PastaFattaInCasa",
-    link: "https://www.instagram.com/antoniette.ec/"
+  { 
+    id: 21, 
+    name: "Pizza Pepperoni Clásica", 
+    category: "Pizzas Artesanales", 
+    price: "$13.00", 
+    description: "Lonjas de pepperoni americano especiado sobre generosa capa de mozzarella y pomodoro casero." 
   },
-  {
-    src: "/images/instagram/pasta-experience-couple.jpg",
-    title: "Momentos en el Rooftop",
-    desc: "Celebraciones y cenas bajo las luces de nuestra terraza",
-    tag: "#RooftopVibes",
-    link: "https://www.instagram.com/antoniette.ec/"
+  { 
+    id: 22, 
+    name: "Pizza Hawaiana", 
+    category: "Pizzas Artesanales", 
+    price: "$13.00", 
+    description: "Jamón cocido especial y piña caramelizada sobre una capa dorada de queso mozzarella y pomodoro." 
   },
-  {
-    src: "/images/instagram/cocktail-autor.jpg",
-    title: "Coctelería de Autor",
-    desc: "Mixología refrescante para acompañar cada velada",
-    tag: "#MixologiaAntoniette",
-    link: "https://www.instagram.com/antoniette.ec/"
-  }
+
+  // --- Segundos & Risotto ---
+  { 
+    id: 23, 
+    name: "Pulpo al Grill con Risotto Cítrico", 
+    category: "Segundos & Risotto", 
+    price: "$28.00", 
+    badge: "Plato Estrella", 
+    description: "Pulpo importado dorado a las brasas con chimichurri mediterráneo, servido sobre risotto cítrico al parmesano." 
+  },
+  { 
+    id: 24, 
+    name: "Salmón al Romero", 
+    category: "Segundos & Risotto", 
+    price: "$24.00", 
+    badge: "Recomendado", 
+    description: "Filete de salmón chileno con mantequilla infusionada al romero fresco, suave puré de papa y espárragos grillados." 
+  },
+  { 
+    id: 25, 
+    name: "Risotto Frutti di Mare", 
+    category: "Segundos & Risotto", 
+    price: "$22.00", 
+    description: "Arroz arborio cremoso con variedad de mariscos frescos, reducción de vino blanco y langostinos dorados." 
+  },
+  { 
+    id: 26, 
+    name: "Ribeye Steak", 
+    category: "Segundos & Risotto", 
+    price: "$20.00", 
+    description: "Corte jugoso y marmoleado cocinado al término deseado a la parrilla, con guarnición a elección de la casa." 
+  },
+
+  // --- Coctelería & Vinos ---
+  { 
+    id: 27, 
+    name: "Cóctel Antoniette", 
+    category: "Coctelería & Vinos", 
+    price: "$14.00", 
+    badge: "Firma de la Casa", 
+    description: "Baileys irlandés, vodka premium y una extracción de café espresso recién hecho. Sedoso, aromático y envolvente." 
+  },
+  { 
+    id: 28, 
+    name: "Negroni Clásico", 
+    category: "Coctelería & Vinos", 
+    price: "$16.00", 
+    description: "Gin botánico de autor, Martini Rosso, Campari amargo y twist de corteza de naranja flameada." 
+  },
+  { 
+    id: 29, 
+    name: "Aperol Spritz", 
+    category: "Coctelería & Vinos", 
+    price: "$16.00", 
+    description: "Aperol, Cinzano Pro Spritz, chorrito de soda burbujeante y rodaja de naranja fresca de estación." 
+  },
+  { 
+    id: 30, 
+    name: "Moscow Mule", 
+    category: "Coctelería & Vinos", 
+    price: "$13.00", 
+    description: "Vodka, jugo de lima recién exprimido, ginger beer picante, menta silvestre y hielo picado en jarra de cobre." 
+  },
+  { 
+    id: 31, 
+    name: "Pisco Sour", 
+    category: "Coctelería & Vinos", 
+    price: "$13.00", 
+    description: "Pisco aromático, jugo de limón fresco, emulsión sedosa de clara de huevo y gotas de amargo de angostura." 
+  },
+  { 
+    id: 32, 
+    name: "Margarita Frozen", 
+    category: "Coctelería & Vinos", 
+    price: "$12.00", 
+    description: "Tequila reposado, jugo de limón, licor de naranja, hielo frappé y escarchado de sal fina en el borde." 
+  },
+  { 
+    id: 33, 
+    name: "Sangría de la Casa (Copa / Jarra)", 
+    category: "Coctelería & Vinos", 
+    price: "$9 / $30", 
+    description: "Vino tinto o blanco con maceración artesanal de frutas frescas, toque de ron añejo y soda cítrica." 
+  },
+  { 
+    id: 34, 
+    name: "Copa de Vino / Botella de la Casa", 
+    category: "Coctelería & Vinos", 
+    price: "$7 / $25+", 
+    description: "Selección de vinos tintos (Chianti DOCG, Casillero Cabernet, Merlot, Malbec) y blancos o espumosos (Sauvignon Blanc, Lambrusco)." 
+  },
 ];
 
 const TESTIMONIALS = [
@@ -168,20 +326,10 @@ const staggerContainer = {
 };
 
 export default function LandingPage() {
-  const [activeCategory, setActiveCategory] = useState("Entradas");
+  const [activeCategory, setActiveCategory] = useState("Antipasti & Ensaladas");
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [reviews, setReviews] = useState<any[]>(TESTIMONIALS);
-
-  useEffect(() => {
-    async function loadData() {
-      const reviewsRes = await getActiveReviews();
-      if (reviewsRes.reviews && reviewsRes.reviews.length > 0) {
-        setReviews(reviewsRes.reviews);
-      }
-    }
-    loadData();
-  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -207,28 +355,36 @@ export default function LandingPage() {
       
       {/* 1. HERO / PORTADA */}
       <section className="relative h-screen w-full flex flex-col items-center justify-center overflow-hidden">
-        {/* Background Parallax Image & Overlays */}
-        <motion.div 
-          className="absolute inset-0 z-0"
-          initial={{ scale: 1.1 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        >
-          {/* Base darkening overlay */}
-          <div className="absolute inset-0 bg-black/35 z-10" />
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/15 to-black/55 z-10" />
-          
-          {/* Grain texture overlay para toque editorial */}
-          <div className="absolute inset-0 z-10 opacity-15 mix-blend-overlay pointer-events-none" style={{ backgroundImage: "url('https://grainy-gradients.vercel.app/noise.svg')" }}></div>
+        {/* Background Cinemático con Recorrido Suave Horizontal (Ken Burns) */}
+        <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+          <motion.div 
+            className="absolute inset-0 w-[116%] h-[116%] -left-[8%] -top-[8%]"
+            animate={{ 
+              x: ["-3.5%", "3.5%", "-3.5%"],
+              scale: [1.06, 1.10, 1.06]
+            }}
+            transition={{ 
+              duration: 22, 
+              repeat: Infinity, 
+              ease: "easeInOut" 
+            }}
+          >
+            <Image 
+              src="/images/hero-antoniette-clean.jpg" 
+              alt="Interior y terraza exclusiva de Antoniette Italian Rooftop" 
+              fill
+              priority
+              unoptimized
+              className="object-cover object-center"
+            />
+          </motion.div>
 
-          <Image 
-            src="/images/hero-real-antoniette.jpg" 
-            alt="Interior y terraza exclusiva de Antoniette Italian Rooftop" 
-            fill
-            priority
-            className="object-cover object-center"
-          />
-        </motion.div>
+          {/* Gradientes elegantes fijos para contraste perfecto sin distorsión */}
+          <div className="absolute inset-0 bg-black/25 z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-background via-black/10 to-black/50 z-10" />
+          {/* Desvanecido suave hacia la siguiente sección */}
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-background via-background/70 to-transparent z-10" />
+        </div>
 
         {/* Navbar */}
         <motion.nav 
@@ -237,9 +393,9 @@ export default function LandingPage() {
           animate={{ y: 0 }}
           transition={{ duration: 0.8 }}
         >
-          <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-            {/* Logo y Badge de Abierto */}
-            <div className="flex items-center gap-6">
+          <div className="max-w-7xl mx-auto px-6 relative flex justify-between items-center">
+            {/* Logo */}
+            <div className="flex items-center gap-6 z-10">
               <a href="#" className="flex items-center">
                 <Image 
                   src="/images/logo-transparent.png" 
@@ -250,37 +406,31 @@ export default function LandingPage() {
                   className="h-14 w-auto object-contain"
                 />
               </a>
-              
-              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full border border-surface-border bg-black/20 backdrop-blur-sm">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                <span className="text-xs uppercase tracking-widest text-foreground/80 font-light">Abierto ahora</span>
-              </div>
             </div>
 
-            {/* Navegación Desktop */}
-            <div className="hidden md:flex items-center gap-8 text-xs uppercase tracking-widest text-foreground/80 font-medium">
+            {/* Navegación Desktop Centrada */}
+            <div className="hidden md:flex absolute left-1/2 -translate-x-1/2 items-center gap-8 text-xs uppercase tracking-widest text-foreground/80 font-medium">
               <a href="#nosotros" className="hover:text-accent transition-colors">Nosotros</a>
               <a href="#menu" className="hover:text-accent transition-colors">Menú</a>
               <a href="#experiencia" className="hover:text-accent transition-colors">Experiencia</a>
               <a href="#reservas" className="hover:text-accent transition-colors">Ubicación</a>
             </div>
 
-            {/* CTA Reservar Mesa */}
-            <div className="flex items-center gap-4">
-              <a 
-                href="#reservas"
-                className="px-5 py-2.5 border border-accent text-accent hover:bg-accent hover:text-[#1A1D18] transition-colors duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold"
-              >
-                Reservar Mesa
-              </a>
+            {/* Badge de Abierto a la derecha */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full border border-surface-border bg-black/20 backdrop-blur-sm z-10">
+              <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
+              <span className="text-xs uppercase tracking-widest text-foreground/80 font-light">Abierto ahora</span>
             </div>
           </div>
         </motion.nav>
 
         {/* Hero Content */}
         <div className="relative z-20 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
+          {/* Sutil halo oscuro detrás del texto para máxima legibilidad */}
+          <div className="absolute -inset-x-8 -inset-y-12 bg-black/35 rounded-3xl blur-2xl -z-10 pointer-events-none" />
+
           <motion.p 
-            className="text-xs md:text-sm text-accent tracking-[0.3em] uppercase mb-6 font-medium"
+            className="text-xs md:text-sm text-accent tracking-[0.3em] uppercase mb-4 font-medium drop-shadow-md"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.1 }}
@@ -288,7 +438,7 @@ export default function LandingPage() {
             DESDE 2020 · SANTO DOMINGO
           </motion.p>
           <motion.h1 
-            className="font-playfair text-5xl md:text-7xl lg:text-8xl text-foreground mb-4 tracking-tight drop-shadow-xl"
+            className="font-playfair text-5xl md:text-7xl lg:text-8xl text-foreground mb-4 tracking-tight drop-shadow-[0_8px_30px_rgba(0,0,0,0.9)]"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
@@ -296,7 +446,7 @@ export default function LandingPage() {
             Antoniette
           </motion.h1>
           <motion.p 
-            className="text-lg md:text-xl text-foreground/90 font-light tracking-[0.2em] uppercase mb-10 drop-shadow-md"
+            className="text-lg md:text-xl text-foreground/95 font-light tracking-[0.25em] uppercase mb-10 drop-shadow-[0_4px_16px_rgba(0,0,0,0.8)]"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}
@@ -310,7 +460,7 @@ export default function LandingPage() {
           >
             <a 
               href="#reservas"
-              className="group relative inline-flex items-center justify-center px-8 py-4 bg-accent text-[#1A1D18] font-semibold tracking-widest uppercase overflow-hidden hover:scale-105 transition-transform duration-300"
+              className="group relative inline-flex items-center justify-center px-8 py-4 bg-accent text-[#1A1D18] font-semibold tracking-widest uppercase overflow-hidden hover:scale-105 transition-transform duration-300 shadow-xl shadow-black/40"
             >
               <span className="relative z-10">Vive la experiencia</span>
               <div className="absolute inset-0 h-full w-full bg-white/20 transform scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-300 ease-out"></div>
@@ -362,7 +512,6 @@ export default function LandingPage() {
             viewport={{ once: true, margin: "-100px" }}
             variants={fadeUp}
           >
-            <div className="absolute inset-0 bg-accent/20 translate-x-4 translate-y-4 rounded-sm" />
             <Image 
               src="/images/concepto-plato.png" 
               alt="Cucina Italiana Pasta Auténtica" 
@@ -374,64 +523,103 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 3. MENÚ DESTACADO */}
-      <section id="menu" className="py-24 bg-surface relative">
-        <div className="max-w-7xl mx-auto px-6">
+      {/* Divisor fino editorial italiano */}
+      <div className="relative flex items-center justify-center py-4 bg-background">
+        <div className="w-24 md:w-40 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+        <div className="mx-4 flex items-center gap-2 text-accent/50">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+          <span className="text-[10px] tracking-[0.3em] uppercase font-light font-playfair">Antoniette</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+        </div>
+        <div className="w-24 md:w-40 h-px bg-gradient-to-l from-transparent via-accent/30 to-transparent" />
+      </div>
+
+      {/* 3. MENÚ COMPLETO (Carta Editorial Fina) */}
+      <section id="menu" className="py-24 md:py-28 bg-gradient-to-b from-background via-[#20241E] to-background relative overflow-hidden">
+        {/* Desvanecidos suaves para eliminar cualquier corte duro */}
+        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
+
+        {/* Glow ambiental dorado sutil */}
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-accent/[0.04] rounded-full blur-3xl pointer-events-none" />
+
+        <div className="max-w-6xl mx-auto px-6 relative z-10">
           <motion.div 
-            className="text-center mb-16 space-y-4"
+            className="text-center mb-14 space-y-3"
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
           >
-            <h2 className="font-playfair text-4xl md:text-5xl text-accent">Il Menù</h2>
-            <p className="text-foreground/70 tracking-widest uppercase text-sm">Selección de Autor</p>
+            <div className="flex items-center justify-center gap-2 text-accent text-xs uppercase tracking-[0.3em] font-medium">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Passione di famiglia dal 1991</span>
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <h2 className="font-playfair text-4xl md:text-6xl text-foreground font-normal tracking-tight">
+              Il Menù
+            </h2>
+            <p className="text-foreground/60 italic text-sm md:text-base font-light font-playfair max-w-md mx-auto">
+              &ldquo;Antoniette, con il cuore di Che Luis, un assaggio di casa in ogni piatto.&rdquo;
+            </p>
           </motion.div>
 
-          {/* Categorías Tabs */}
-          <div className="flex flex-wrap justify-center gap-4 md:gap-8 mb-12">
-            {MENU_CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`text-sm md:text-base tracking-widest uppercase transition-all duration-300 pb-2 border-b-2 ${
-                  activeCategory === cat 
-                    ? 'border-accent text-accent' 
-                    : 'border-transparent text-foreground/50 hover:text-foreground'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+          {/* Categorías Tabs Elegantes */}
+          <div className="flex flex-wrap justify-center gap-2 md:gap-3 mb-14 border-b border-surface-border/40 pb-6">
+            {MENU_CATEGORIES.map((cat) => {
+              const isActive = activeCategory === cat;
+              return (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`px-5 py-2.5 rounded-full text-xs md:text-sm tracking-wider uppercase transition-all duration-300 font-medium ${
+                    isActive 
+                      ? 'bg-accent text-[#1A1D18] shadow-lg shadow-accent/20 font-bold scale-105' 
+                      : 'text-foreground/60 hover:text-foreground hover:bg-background/40 border border-transparent hover:border-surface-border/50'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
           </div>
 
-          {/* Grid de Platos */}
+          {/* Lista Editorial de Platos (2 Columnas) */}
           <motion.div 
-            className="grid md:grid-cols-2 gap-x-12 gap-y-10"
+            className="grid grid-cols-1 md:grid-cols-2 gap-x-14 gap-y-10"
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            key={activeCategory} // Force re-render on category change
+            key={activeCategory}
           >
             {filteredMenu.map((item) => (
               <motion.div 
                 key={item.id} 
                 variants={fadeUp}
-                className="group flex gap-6 items-center p-4 hover:bg-background/50 rounded-lg transition-colors duration-300 cursor-pointer"
+                className="group flex flex-col justify-between p-4 -mx-4 rounded-lg hover:bg-background/40 transition-colors duration-300"
               >
-                <div className="relative w-24 h-24 md:w-32 md:h-32 shrink-0 overflow-hidden rounded-md">
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-playfair text-xl md:text-2xl text-foreground group-hover:text-accent transition-colors">{item.name}</h3>
-                    <span className="font-playfair text-xl text-accent">{item.price}</span>
+                <div>
+                  <div className="flex items-baseline justify-between gap-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-playfair text-xl md:text-2xl text-foreground group-hover:text-accent transition-colors font-medium">
+                        {item.name}
+                      </h3>
+                      {item.badge && (
+                        <span className="text-[9px] uppercase tracking-widest px-2.5 py-0.5 rounded-full border border-accent/40 bg-accent/10 text-accent font-sans font-medium">
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Línea punteada editorial */}
+                    <div className="hidden sm:block flex-grow border-b border-dotted border-foreground/20 mx-2" />
+
+                    <span className="font-playfair text-xl md:text-2xl text-accent font-semibold shrink-0">
+                      {item.price}
+                    </span>
                   </div>
-                  <p className="text-sm text-foreground/60 font-light leading-relaxed">
+
+                  <p className="text-xs md:text-sm text-foreground/60 font-light leading-relaxed mt-2 pr-4">
                     {item.description}
                   </p>
                 </div>
@@ -439,13 +627,36 @@ export default function LandingPage() {
             ))}
           </motion.div>
           
-          <div className="mt-16 text-center">
-            <a href="#reservas" className="text-accent uppercase tracking-widest text-sm border-b border-accent pb-1 hover:text-accent-hover transition-colors">
-              Descargar Menú Completo
+          {/* Pie del menú con Descarga del Menú PDF y nota legal */}
+          <div className="mt-16 pt-10 border-t border-surface-border/60 flex flex-col items-center text-center space-y-4">
+            <a 
+              href="/menu-antoniette.pdf" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-3 px-8 py-4 bg-accent/10 hover:bg-accent text-accent hover:text-[#1A1D18] border border-accent/40 hover:border-accent transition-all duration-300 rounded-sm text-xs uppercase tracking-widest font-semibold shadow-lg group"
+            >
+              <FileText className="w-4 h-4 text-accent group-hover:text-[#1A1D18] transition-colors" />
+              <span>Ver Menú Digital Completo (PDF)</span>
+              <span className="text-[10px] text-accent/70 group-hover:text-[#1A1D18]/80 font-normal">· 15 páginas</span>
             </a>
+            
+            <p className="text-[11px] uppercase tracking-widest text-foreground/40 font-light max-w-lg">
+              Los precios ya incluyen IVA · Déjanos saber si posees alguna alergia, intolerancia o restricción de alimentos
+            </p>
           </div>
         </div>
       </section>
+
+      {/* Divisor fino editorial italiano */}
+      <div className="relative flex items-center justify-center py-4 bg-background">
+        <div className="w-24 md:w-40 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+        <div className="mx-4 flex items-center gap-2 text-accent/50">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+          <span className="text-[10px] tracking-[0.3em] uppercase font-light font-playfair">Rooftop</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+        </div>
+        <div className="w-24 md:w-40 h-px bg-gradient-to-l from-transparent via-accent/30 to-transparent" />
+      </div>
 
       {/* 4. EXPERIENCIA ROOFTOP */}
       <section id="experiencia" className="py-24 bg-background">
@@ -477,77 +688,24 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 5. GALERÍA / INSTAGRAM FEED (@antoniette.ec) */}
-      <section className="py-20 bg-background border-t border-surface-border">
-        <div className="max-w-7xl mx-auto px-6 mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <div className="flex items-center gap-2 text-accent text-xs uppercase tracking-[0.25em] mb-2 font-medium">
-              <InstagramIcon className="w-4 h-4" />
-              <span>Experiencia & Comunidad</span>
-            </div>
-            <h2 className="font-playfair text-3xl md:text-5xl text-foreground">
-              @antoniette.ec en Instagram
-            </h2>
-            <p className="text-foreground/60 text-sm mt-2 max-w-md font-light">
-              Revive los momentos, platos de autor y celebraciones en las alturas de nuestro rooftop.
-            </p>
-          </div>
-          <a 
-            href="https://www.instagram.com/antoniette.ec/" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-surface hover:bg-surface-border border border-surface-border hover:border-accent text-xs uppercase tracking-widest text-foreground hover:text-accent transition-all rounded-full group w-fit shadow-md"
-          >
-            <span>Ver perfil en Instagram</span>
-            <InstagramIcon className="w-4 h-4 text-accent group-hover:scale-110 transition-transform" />
-          </a>
-        </div>
 
-        <div className="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-          {GALLERY_ITEMS.map((item, idx) => (
-            <motion.a 
-              key={idx}
-              href={item.link}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="relative aspect-square overflow-hidden group rounded-xl border border-surface-border bg-surface block"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: idx * 0.1, duration: 0.6 }}
-            >
-              <img 
-                src={item.src} 
-                alt={item.title} 
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 brightness-95 group-hover:brightness-90"
-              />
-              
-              {/* Tag pill */}
-              <div className="absolute top-3 left-3 z-10">
-                <span className="px-3 py-1 bg-black/60 backdrop-blur-md rounded-full text-[10px] uppercase tracking-wider text-accent font-medium border border-white/10">
-                  {item.tag}
-                </span>
-              </div>
 
-              {/* Bottom overlay with caption and Instagram icon */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5">
-                <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <h4 className="font-playfair text-lg text-white font-semibold">{item.title}</h4>
-                    <p className="text-xs text-white/80 line-clamp-1 font-light mt-0.5">{item.desc}</p>
-                  </div>
-                  <div className="p-2.5 bg-accent/20 rounded-full text-accent backdrop-blur-sm shrink-0">
-                    <InstagramIcon className="w-5 h-5" />
-                  </div>
-                </div>
-              </div>
-            </motion.a>
-          ))}
+      {/* Divisor fino editorial italiano */}
+      <div className="relative flex items-center justify-center py-4 bg-background">
+        <div className="w-24 md:w-40 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
+        <div className="mx-4 flex items-center gap-2 text-accent/50">
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
+          <span className="text-[10px] tracking-[0.3em] uppercase font-light font-playfair">Esperienze</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-accent/40" />
         </div>
-      </section>
+        <div className="w-24 md:w-40 h-px bg-gradient-to-l from-transparent via-accent/30 to-transparent" />
+      </div>
 
       {/* 6. TESTIMONIOS */}
-      <section className="py-32 bg-surface relative overflow-hidden">
+      <section className="py-28 bg-gradient-to-b from-background via-[#20241E] to-background relative overflow-hidden">
+        {/* Desvanecidos suaves */}
+        <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-background to-transparent pointer-events-none z-10" />
+        <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-background to-transparent pointer-events-none z-10" />
         <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl" />
         <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/5 rounded-full blur-3xl" />
         
@@ -616,7 +774,7 @@ export default function LandingPage() {
                 <MapPin className="w-6 h-6 text-accent shrink-0 mt-1" />
                 <div>
                   <h4 className="font-medium uppercase tracking-widest text-sm mb-1">Dirección</h4>
-                  <p className="text-foreground/70 font-light">QR3R+3QC, Av. Yamboya<br/>Santo Domingo</p>
+                  <p className="text-foreground/70 font-light">Av. Río Yamboya y Caracas<br/>Santo Domingo</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -659,10 +817,10 @@ export default function LandingPage() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeUp}
-            className="h-[400px] md:h-full min-h-[400px] bg-surface rounded-lg overflow-hidden border border-surface-border relative grayscale hover:grayscale-0 transition-all duration-700"
+            className="h-[400px] md:h-full min-h-[400px] bg-surface rounded-lg overflow-hidden border border-surface-border relative shadow-lg"
           >
             <iframe 
-              src="https://www.google.com/maps?q=QR3R%2B3QC,+Av.+Yamboya,+Santo+Domingo&output=embed" 
+              src="https://www.google.com/maps?q=Antoniette,+Av.+Yamboya,+Santo+Domingo&output=embed" 
               width="100%" 
               height="100%" 
               style={{ border: 0 }} 
